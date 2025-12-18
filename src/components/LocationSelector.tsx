@@ -3,7 +3,6 @@ import { Search, MapPin, ChevronDown, X } from 'lucide-react';
 import { cities, countries, City } from '@/data/cities';
 import { getCurrentTimeInTimezone } from '@/utils/timezone';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import InteractiveMap from './InteractiveMap';
 import TimezoneSelector from './TimezoneSelector';
@@ -120,36 +119,34 @@ export default function LocationSelector({ label, value, onChange }: LocationSel
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <label className="block text-sm font-medium text-muted-foreground mb-2">
-        {label}
-      </label>
-
+      {/* Clickable Input Area */}
       <div
         className={cn(
-          "relative flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-lg cursor-pointer transition-all duration-200 input-highlight",
-          isOpen && "ring-2 ring-primary/20"
+          "relative flex items-center gap-3 px-4 py-3.5 min-h-[52px] bg-secondary/50 border border-border rounded-xl cursor-pointer transition-all duration-200 touch-active",
+          isOpen && "ring-2 ring-primary/30 border-primary/30"
         )}
         onClick={() => {
           setIsOpen(true);
           setTimeout(() => inputRef.current?.focus(), 0);
         }}
       >
-        <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
         
         {value && !isOpen ? (
-          <div className="flex-1 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary" />
-              <span className="text-foreground font-medium">{value.name}</span>
+          <div className="flex-1 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
+              <span className="text-foreground font-medium text-base truncate">{value.name}</span>
             </div>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 clearSelection();
               }}
-              className="p-1 hover:bg-muted rounded-full transition-colors"
+              className="p-2 -mr-1 rounded-full touch-active"
+              aria-label="Clear selection"
             >
-              <X className="w-4 h-4 text-muted-foreground" />
+              <X className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
         ) : (
@@ -160,33 +157,44 @@ export default function LocationSelector({ label, value, onChange }: LocationSel
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search cities..."
-              className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+              className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-base"
               onClick={(e) => e.stopPropagation()}
             />
             <ChevronDown className={cn(
-              "w-4 h-4 text-muted-foreground transition-transform duration-200",
+              "w-5 h-5 text-muted-foreground transition-transform duration-200",
               isOpen && "rotate-180"
             )} />
           </>
         )}
       </div>
 
-      {/* Dropdown */}
+      {/* Dropdown - Full Screen on Mobile */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-lg shadow-card-lg z-50 max-h-80 overflow-hidden animate-fade-in">
+        <div className="fixed inset-x-0 bottom-0 top-auto md:absolute md:top-full md:bottom-auto md:left-0 md:right-0 md:mt-2 bg-popover border-t md:border border-border md:rounded-xl shadow-lg z-50 animate-slide-up">
+          {/* Mobile Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border md:hidden">
+            <span className="font-medium text-foreground">Select Location</span>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-2 -mr-2 touch-active"
+            >
+              <X className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
+
           {!showCountryFallback ? (
             <>
-              <div className="overflow-y-auto max-h-64">
+              <div className="overflow-y-auto max-h-[60vh] md:max-h-72 hide-scrollbar">
                 {filteredCities.map((city, index) => (
                   <button
                     key={`${city.name}-${city.country}-${index}`}
                     onClick={() => handleCitySelect(city)}
-                    className="w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors flex items-center justify-between group"
+                    className="w-full px-4 py-4 text-left transition-colors flex items-center justify-between touch-active active:bg-muted/70"
                   >
                     <div className="flex items-center gap-3">
-                      <MapPin className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <MapPin className="w-5 h-5 text-muted-foreground" />
                       <div>
-                        <div className="text-foreground font-medium">{city.name}</div>
+                        <div className="text-foreground font-medium text-base">{city.name}</div>
                         <div className="text-sm text-muted-foreground">{city.country}</div>
                       </div>
                     </div>
@@ -202,12 +210,11 @@ export default function LocationSelector({ label, value, onChange }: LocationSel
                   <p className="text-sm text-muted-foreground mb-3">City not found?</p>
                   <Button
                     variant="outline"
-                    size="sm"
                     onClick={() => {
                       setShowCountryFallback(true);
                       setSearchQuery('');
                     }}
-                    className="w-full"
+                    className="w-full h-12 text-base touch-active"
                   >
                     Select country instead
                   </Button>
@@ -215,14 +222,14 @@ export default function LocationSelector({ label, value, onChange }: LocationSel
               )}
             </>
           ) : (
-            <div className="overflow-y-auto max-h-64">
-              <div className="px-4 py-2 border-b border-border">
-                <Input
+            <div className="overflow-y-auto max-h-[60vh] md:max-h-72">
+              <div className="px-4 py-3 border-b border-border sticky top-0 bg-popover">
+                <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search countries..."
-                  className="h-9"
+                  className="w-full px-4 py-3 bg-secondary/50 border border-border rounded-xl text-base outline-none focus:ring-2 focus:ring-primary/30"
                   autoFocus
                 />
               </div>
@@ -230,9 +237,9 @@ export default function LocationSelector({ label, value, onChange }: LocationSel
                 <button
                   key={country.code}
                   onClick={() => handleCountrySelect(country)}
-                  className="w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors flex items-center gap-3"
+                  className="w-full px-4 py-4 text-left transition-colors flex items-center gap-3 touch-active active:bg-muted/70"
                 >
-                  <span className="text-foreground">{country.name}</span>
+                  <span className="text-foreground text-base">{country.name}</span>
                 </button>
               ))}
             </div>

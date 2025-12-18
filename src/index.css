@@ -46,6 +46,9 @@
     --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.1), 0 4px 6px -4px hsl(222 47% 11% / 0.1);
     --shadow-glow: 0 0 20px hsl(199 89% 48% / 0.15);
 
+    /* Mobile touch target minimum */
+    --touch-target: 44px;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -103,17 +106,46 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    /* Prevent font scaling on rotation */
+    -webkit-text-size-adjust: 100%;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+    /* Safe area padding for notched devices */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, sans-serif;
+    /* Base font size 16px for readability */
+    font-size: 16px;
+    line-height: 1.5;
+    /* Prevent pull-to-refresh on mobile */
+    overscroll-behavior-y: contain;
+  }
+
+  /* Ensure minimum touch target size */
+  button, 
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  a {
+    min-height: var(--touch-target);
+  }
+
+  /* Remove default tap highlight */
+  input, textarea, select, button {
+    font-size: 16px; /* Prevent zoom on iOS */
   }
 }
 
 @layer components {
   .glass-card {
-    @apply bg-card/80 backdrop-blur-sm border border-border/50;
+    @apply bg-card/95 backdrop-blur-sm border border-border/50;
     box-shadow: var(--shadow-md);
   }
 
@@ -124,6 +156,31 @@
   .input-highlight:focus-within {
     box-shadow: var(--shadow-glow);
   }
+
+  /* Mobile-first touch target button */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+
+  /* Mobile-first card */
+  .mobile-card {
+    @apply bg-card rounded-2xl border border-border p-4;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Safe area bottom padding for fixed elements */
+  .safe-bottom {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  /* Active state for mobile (replaces hover) */
+  .touch-active {
+    @apply transition-all duration-150;
+  }
+
+  .touch-active:active {
+    @apply scale-[0.98] opacity-90;
+  }
 }
 
 @layer utilities {
@@ -133,11 +190,11 @@
   }
 
   .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.2s ease-out;
   }
 
   .animate-slide-up {
-    animation: slideUp 0.4s ease-out;
+    animation: slideUp 0.3s ease-out;
   }
 
   .animate-pulse-soft {
@@ -174,10 +231,11 @@
   }
 }
 
-/* Leaflet customizations */
+/* Leaflet customizations - mobile optimized */
 .leaflet-container {
-  @apply rounded-lg;
+  @apply rounded-xl;
   font-family: 'Inter', system-ui, sans-serif;
+  touch-action: pan-x pan-y;
 }
 
 .leaflet-control-zoom {
@@ -186,8 +244,22 @@
 
 .leaflet-control-zoom a {
   @apply bg-card text-foreground border-border;
+  width: 44px !important;
+  height: 44px !important;
+  line-height: 44px !important;
+  font-size: 20px !important;
 }
 
-.leaflet-control-zoom a:hover {
+.leaflet-control-zoom a:active {
   @apply bg-secondary;
+}
+
+/* Mobile scrollbar hide */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
