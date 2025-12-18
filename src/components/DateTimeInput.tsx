@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, KeyboardEvent, ChangeEvent } from 'react';
+import React, { useState, useRef, KeyboardEvent, ChangeEvent } from 'react';
 import { Calendar, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -63,11 +63,6 @@ export default function DateTimeInput({ value, onChange, isValid }: DateTimeInpu
       result += ' ';
       const timeDigits = digits.slice(8);
       
-      // Smart hour/minute parsing
-      // If first digit > 1, it's definitely a single-digit hour (1-9)
-      // If "1X" where X > 2, then it's a single digit hour followed by minutes
-      // Otherwise "10", "11", "12" are two-digit hours
-      
       let hourStr = '';
       let minuteStr = '';
       
@@ -75,17 +70,14 @@ export default function DateTimeInput({ value, onChange, isValid }: DateTimeInpu
         const firstDigit = parseInt(timeDigits[0], 10);
         
         if (firstDigit > 1) {
-          // Single digit hour (2-9)
           hourStr = timeDigits[0];
           minuteStr = timeDigits.slice(1, 3);
         } else if (timeDigits.length >= 2) {
           const firstTwo = parseInt(timeDigits.slice(0, 2), 10);
           if (firstTwo > 12) {
-            // Can't be a valid 12-hour format, treat first as single digit hour
             hourStr = timeDigits[0];
             minuteStr = timeDigits.slice(1, 3);
           } else {
-            // Valid two-digit hour (10, 11, 12) or leading zero (01-09)
             hourStr = timeDigits.slice(0, 2);
             minuteStr = timeDigits.slice(2, 4);
           }
@@ -118,31 +110,36 @@ export default function DateTimeInput({ value, onChange, isValid }: DateTimeInpu
       
       <div
         className={cn(
-          "relative flex items-center gap-3 px-4 py-3 bg-card border rounded-lg transition-all duration-200 input-highlight",
-          isFocused && "ring-2 ring-primary/20",
+          "relative flex items-center gap-3 px-4 py-3.5 min-h-[52px] bg-secondary/50 border rounded-xl transition-all duration-200",
+          isFocused && "ring-2 ring-primary/30 border-primary/30",
           !isValid && value.length > 0 ? "border-destructive/50" : "border-border"
         )}
       >
-        <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        <Calendar className="w-5 h-5 text-muted-foreground flex-shrink-0" />
         
         <input
           ref={inputRef}
           type="text"
+          inputMode="text"
           value={value}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder="MM/DD/YYYY HH:MM AM/PM"
-          className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground font-mono tracking-wide"
+          className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground font-mono text-base tracking-wide"
           maxLength={22}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
         />
         
-        <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        <Clock className="w-5 h-5 text-muted-foreground flex-shrink-0" />
       </div>
       
-      <p className="mt-2 text-xs text-muted-foreground">
-        Type digits only (e.g., 12252024330PM → 12/25/2024 3:30 PM)
+      <p className="mt-2 text-sm text-muted-foreground">
+        Type digits + A/P (e.g., 12252024330P)
       </p>
     </div>
   );

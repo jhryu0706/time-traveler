@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMapEvents, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { X, MapPin, Check } from 'lucide-react';
@@ -6,28 +6,17 @@ import { Button } from '@/components/ui/button';
 import { getTimezoneFromCoordinates } from '@/utils/timezone';
 import 'leaflet/dist/leaflet.css';
 
-// Fix for default marker icon
-const markerIcon = new L.Icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
-
 // Red marker for selection
 const redMarkerIcon = new L.Icon({
   iconUrl: 'data:image/svg+xml;base64,' + btoa(`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="24" height="36">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="32" height="48">
       <path fill="#ef4444" stroke="#b91c1c" stroke-width="1" d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24c0-6.6-5.4-12-12-12z"/>
       <circle fill="white" cx="12" cy="12" r="5"/>
     </svg>
   `),
-  iconSize: [24, 36],
-  iconAnchor: [12, 36],
-  popupAnchor: [0, -36],
+  iconSize: [32, 48],
+  iconAnchor: [16, 48],
+  popupAnchor: [0, -48],
 });
 
 interface InteractiveMapProps {
@@ -72,82 +61,79 @@ export default function InteractiveMap({ country, onSelect, onClose }: Interacti
   };
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-card border border-border rounded-xl shadow-card-lg w-full max-w-3xl overflow-hidden animate-slide-up">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <div>
-            <h3 className="text-lg font-semibold text-foreground">Select Location</h3>
-            <p className="text-sm text-muted-foreground">{country.name}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-muted rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
+    <div className="fixed inset-0 bg-background z-50 flex flex-col animate-fade-in">
+      {/* Header */}
+      <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-card safe-top">
+        <div className="min-w-0">
+          <h3 className="text-lg font-semibold text-foreground truncate">Select Location</h3>
+          <p className="text-sm text-muted-foreground truncate">{country.name}</p>
         </div>
+        <button
+          onClick={onClose}
+          className="p-3 -mr-2 touch-active"
+          aria-label="Close map"
+        >
+          <X className="w-6 h-6 text-muted-foreground" />
+        </button>
+      </header>
 
-        {/* Map */}
-        <div className="h-96 relative">
-          <MapContainer
-            center={[country.lat, country.lng]}
-            zoom={country.zoom}
-            className="h-full w-full"
-            style={{ background: 'hsl(var(--muted))' }}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <MapController center={[country.lat, country.lng]} zoom={country.zoom} />
-            <MapClickHandler onMapClick={handleMapClick} />
-            {selectedPosition && (
-              <Marker position={[selectedPosition.lat, selectedPosition.lng]} icon={redMarkerIcon} />
-            )}
-          </MapContainer>
-          
-          {/* Click instruction overlay */}
-          {!selectedPosition && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-card/90 backdrop-blur-sm px-4 py-2 rounded-full border border-border shadow-md">
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                Click on the map to place a pin
-              </p>
-            </div>
+      {/* Map - Full height */}
+      <div className="flex-1 relative">
+        <MapContainer
+          center={[country.lat, country.lng]}
+          zoom={country.zoom}
+          className="h-full w-full"
+          style={{ background: 'hsl(var(--muted))' }}
+          zoomControl={false}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <MapController center={[country.lat, country.lng]} zoom={country.zoom} />
+          <MapClickHandler onMapClick={handleMapClick} />
+          {selectedPosition && (
+            <Marker position={[selectedPosition.lat, selectedPosition.lng]} icon={redMarkerIcon} />
           )}
-        </div>
+        </MapContainer>
+        
+        {/* Click instruction overlay */}
+        {!selectedPosition && (
+          <div className="absolute bottom-4 left-4 right-4 bg-card/95 backdrop-blur-sm px-4 py-3 rounded-xl border border-border shadow-lg">
+            <p className="text-base text-muted-foreground flex items-center gap-3">
+              <MapPin className="w-5 h-5 flex-shrink-0" />
+              Tap on the map to place a pin
+            </p>
+          </div>
+        )}
+      </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-border bg-muted/30">
-          {selectedPosition ? (
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="w-4 h-4 text-destructive" />
-                  <span className="font-mono text-foreground">
-                    {selectedPosition.lat.toFixed(4)}, {selectedPosition.lng.toFixed(4)}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Timezone: {timezone}
+      {/* Footer - Sticky bottom */}
+      <footer className="px-4 py-4 border-t border-border bg-card safe-bottom">
+        {selectedPosition ? (
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <MapPin className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <span className="font-mono text-foreground text-base block">
+                  {selectedPosition.lat.toFixed(4)}, {selectedPosition.lng.toFixed(4)}
+                </span>
+                <p className="text-sm text-muted-foreground truncate">
+                  {timezone}
                 </p>
               </div>
-              <Button onClick={handleSubmit} className="gap-2">
-                <Check className="w-4 h-4" />
-                Submit
-              </Button>
             </div>
-          ) : (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">No location selected</p>
-              <Button variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
+            <Button onClick={handleSubmit} className="w-full h-12 text-base gap-2 touch-active">
+              <Check className="w-5 h-5" />
+              Confirm Location
+            </Button>
+          </div>
+        ) : (
+          <Button variant="outline" onClick={onClose} className="w-full h-12 text-base touch-active">
+            Cancel
+          </Button>
+        )}
+      </footer>
     </div>
   );
 }
