@@ -124,12 +124,11 @@ export function convertDateTime(
     if (targetHour > 12) targetHour -= 12;
     if (targetHour === 0) targetHour = 12;
     
-    // Format: Wed, Dec 31, 2025 at 12:00 PM
+    // Format: 12/31/2025 (Wed) at 12:00 PM
     const targetDate = new Date(parseInt(targetYear, 10), targetMonth - 1, targetDay);
     const dayOfWeek = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(targetDate);
-    const monthName = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(targetDate);
     
-    const converted = `${dayOfWeek}, ${monthName} ${targetDay}, ${targetYear} at ${targetHour}:${targetMinute} ${targetAmPm}`;
+    const converted = `${String(targetMonth).padStart(2, '0')}/${String(targetDay).padStart(2, '0')}/${targetYear} (${dayOfWeek}) at ${targetHour}:${targetMinute} ${targetAmPm}`;
     
     // Calculate day difference
     const sourceDayNum = parseInt(day, 10);
@@ -309,10 +308,9 @@ export function formatDayOfWeek(dateStr: string): string {
     );
     
     const dayOfWeek = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(date);
-    const monthName = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(date);
     
-    // Format: Wed, Dec 31, 2025 at 12:00 PM
-    return `${dayOfWeek}, ${monthName} ${parseInt(day, 10)}, ${year} at ${hour}:${minute} ${ampm.toUpperCase()}`;
+    // Format: 12/31/2025 (Wed) at 12:00 PM
+    return `${month}/${day}/${year} (${dayOfWeek}) at ${hour}:${minute} ${ampm.toUpperCase()}`;
   } catch {
     return dateStr;
   }
