@@ -21,15 +21,11 @@ const minutes = Array.from({ length: 60 }, (_, i) => i);
 const periods = ['AM', 'PM'];
 
 export default function DateTimeInput({ value, onChange, isValid }: DateTimeInputProps) {
-  // Initialize with current date and time
-  const now = new Date();
-  const currentHour12 = now.getHours() % 12 || 12;
-  const currentPeriod = now.getHours() >= 12 ? 'PM' : 'AM';
-  
-  const [date, setDate] = useState<Date | undefined>(now);
-  const [hour, setHour] = useState(currentHour12);
-  const [minute, setMinute] = useState(now.getMinutes());
-  const [period, setPeriod] = useState<'AM' | 'PM'>(currentPeriod);
+  // Initialize blank - no default date/time
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [hour, setHour] = useState(12);
+  const [minute, setMinute] = useState(0);
+  const [period, setPeriod] = useState<'AM' | 'PM'>('AM');
   const [showTimePicker, setShowTimePicker] = useState(false);
   
   const hourRef = useRef<HTMLDivElement>(null);
