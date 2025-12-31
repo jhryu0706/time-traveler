@@ -21,10 +21,15 @@ const minutes = Array.from({ length: 60 }, (_, i) => i);
 const periods = ['AM', 'PM'];
 
 export default function DateTimeInput({ value, onChange, isValid }: DateTimeInputProps) {
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [hour, setHour] = useState(12);
-  const [minute, setMinute] = useState(0);
-  const [period, setPeriod] = useState<'AM' | 'PM'>('AM');
+  // Initialize with current date and time
+  const now = new Date();
+  const currentHour12 = now.getHours() % 12 || 12;
+  const currentPeriod = now.getHours() >= 12 ? 'PM' : 'AM';
+  
+  const [date, setDate] = useState<Date | undefined>(now);
+  const [hour, setHour] = useState(currentHour12);
+  const [minute, setMinute] = useState(now.getMinutes());
+  const [period, setPeriod] = useState<'AM' | 'PM'>(currentPeriod);
   const [showTimePicker, setShowTimePicker] = useState(false);
   
   const hourRef = useRef<HTMLDivElement>(null);
@@ -216,9 +221,9 @@ export default function DateTimeInput({ value, onChange, isValid }: DateTimeInpu
 
       {/* Selected summary */}
       {date && (
-        <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 animate-fade-in">
-          <p className="text-sm text-muted-foreground">Selected:</p>
-          <p className="font-medium text-foreground">{displayValue}</p>
+        <div className="p-3 bg-primary/15 rounded-lg border-2 border-primary/40 animate-fade-in">
+          <p className="text-xs text-primary font-medium uppercase tracking-wide">Selected:</p>
+          <p className="font-bold text-lg text-foreground">{displayValue}</p>
         </div>
       )}
     </div>

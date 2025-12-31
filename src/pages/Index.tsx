@@ -134,11 +134,10 @@ const Index = () => {
           {showResults && (
             <section className="mobile-card animate-slide-up">
               <div className="space-y-4">
-                {/* Header sentence */}
+              {/* Header sentence */}
                 <p className="text-base text-foreground leading-relaxed">
-                  At <span className="font-bold">{sourceLocation.name}</span>
-                  <br />
-                  on <span className="font-bold">{formattedSourceTime}</span>, it's:
+                  <span className="font-bold">{sourceLocation.name}</span> on{' '}
+                  <span className="font-bold">{formattedSourceTime}</span>, is:
                 </p>
 
                 {/* Results list */}

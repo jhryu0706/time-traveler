@@ -120,9 +120,10 @@ export default function LocationSelector({ label, value, onChange }: LocationSel
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Clickable Input Area */}
-      <div
+      <button
+        type="button"
         className={cn(
-          "relative flex items-center gap-3 px-4 py-3.5 min-h-[52px] bg-secondary/50 border border-border rounded-xl cursor-pointer transition-all duration-200 touch-active",
+          "w-full relative flex items-center gap-3 px-4 py-3.5 min-h-[52px] bg-secondary/50 border border-border rounded-xl cursor-pointer transition-all duration-200 touch-active text-left",
           isOpen && "ring-2 ring-primary/30 border-primary/30"
         )}
         onClick={() => {
@@ -166,7 +167,7 @@ export default function LocationSelector({ label, value, onChange }: LocationSel
             )} />
           </>
         )}
-      </div>
+      </button>
 
       {/* Dropdown - Full Screen on Mobile */}
       {isOpen && (
