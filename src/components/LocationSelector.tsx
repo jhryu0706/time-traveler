@@ -25,14 +25,19 @@ export default function LocationSelector({ label, value, onChange }: LocationSel
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const filteredCities = cities.filter(city =>
-    city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    city.country.toLowerCase().includes(searchQuery.toLowerCase())
-  ).slice(0, 50);
+  const filteredCities = cities
+    .filter(city =>
+      city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      city.country.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .slice(0, 50);
 
-  const filteredCountries = countries.filter(country =>
-    country.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredCountries = countries
+    .filter(country =>
+      country.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const showNoResults = searchQuery.length >= 2 && filteredCities.length === 0;
 
