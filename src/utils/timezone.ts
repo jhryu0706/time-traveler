@@ -114,8 +114,8 @@ export function convertDateTime(
     });
     
     const targetYear = targetDateParts.year;
-    const targetMonth = targetDateParts.month;
-    const targetDay = targetDateParts.day;
+    const targetMonth = parseInt(targetDateParts.month, 10);
+    const targetDay = parseInt(targetDateParts.day, 10);
     let targetHour = parseInt(targetDateParts.hour, 10);
     const targetMinute = targetDateParts.minute;
     
@@ -124,13 +124,18 @@ export function convertDateTime(
     if (targetHour > 12) targetHour -= 12;
     if (targetHour === 0) targetHour = 12;
     
-    const converted = `${targetMonth}/${targetDay}/${targetYear} ${targetHour}:${targetMinute} ${targetAmPm}`;
+    // Format: Wed, Dec 31, 2025 at 12:00 PM
+    const targetDate = new Date(parseInt(targetYear, 10), targetMonth - 1, targetDay);
+    const dayOfWeek = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(targetDate);
+    const monthName = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(targetDate);
+    
+    const converted = `${dayOfWeek}, ${monthName} ${targetDay}, ${targetYear} at ${targetHour}:${targetMinute} ${targetAmPm}`;
     
     // Calculate day difference
     const sourceDayNum = parseInt(day, 10);
-    const targetDayNum = parseInt(targetDay, 10);
+    const targetDayNum = targetDay;
     const sourceMonthNum = parseInt(month, 10);
-    const targetMonthNum = parseInt(targetMonth, 10);
+    const targetMonthNum = targetMonth;
     const sourceYearNum = parseInt(year, 10);
     const targetYearNum = parseInt(targetYear, 10);
     
@@ -303,9 +308,11 @@ export function formatDayOfWeek(dateStr: string): string {
       parseInt(day, 10)
     );
     
-    const dayOfWeek = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date);
+    const dayOfWeek = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(date);
+    const monthName = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(date);
     
-    return `${dayOfWeek}, ${month}/${day}/${year} ${hour}:${minute} ${ampm.toUpperCase()}`;
+    // Format: Wed, Dec 31, 2025 at 12:00 PM
+    return `${dayOfWeek}, ${monthName} ${parseInt(day, 10)}, ${year} at ${hour}:${minute} ${ampm.toUpperCase()}`;
   } catch {
     return dateStr;
   }
