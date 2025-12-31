@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Globe, ArrowDownUp, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { Globe, Plus, X, Clock } from 'lucide-react';
 import LocationSelector from '@/components/LocationSelector';
 import DateTimeInput from '@/components/DateTimeInput';
-import ConversionResult from '@/components/ConversionResult';
-import { convertDateTime, isValidDateTime, getCurrentTimeInTimezone } from '@/utils/timezone';
+import { convertDateTime, isValidDateTime, formatDayOfWeek } from '@/utils/timezone';
 import { Button } from '@/components/ui/button';
 
 interface Location {
@@ -14,33 +13,34 @@ interface Location {
 }
 
 const Index = () => {
-  const [locationX, setLocationX] = useState<Location | null>(null);
-  const [locationY, setLocationY] = useState<Location | null>(null);
+  const [sourceLocation, setSourceLocation] = useState<Location | null>(null);
   const [dateTime, setDateTime] = useState('');
-  const [result, setResult] = useState<{ converted: string; dayDiff: number } | null>(null);
+  const [targetLocations, setTargetLocations] = useState<Location[]>([]);
 
   const isDateTimeValid = isValidDateTime(dateTime);
+  const showResults = sourceLocation && isDateTimeValid && targetLocations.length > 0;
 
-  useEffect(() => {
-    if (locationX && locationY && isDateTimeValid) {
-      const conversion = convertDateTime(dateTime, locationX.timezone, locationY.timezone);
-      setResult(conversion);
-    } else {
-      setResult(null);
+  const addTargetLocation = (location: Location) => {
+    if (!targetLocations.find(l => l.name === location.name)) {
+      setTargetLocations([...targetLocations, location]);
     }
-  }, [locationX, locationY, dateTime, isDateTimeValid]);
-
-  const swapLocations = () => {
-    const temp = locationX;
-    setLocationX(locationY);
-    setLocationY(temp);
   };
+
+  const removeTargetLocation = (index: number) => {
+    setTargetLocations(targetLocations.filter((_, i) => i !== index));
+  };
+
+  const getConvertedTime = (targetTimezone: string) => {
+    if (!sourceLocation || !isDateTimeValid) return null;
+    return convertDateTime(dateTime, sourceLocation.timezone, targetTimezone);
+  };
+
+  const formattedSourceTime = isDateTimeValid ? formatDayOfWeek(dateTime) : '';
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Mobile-optimized container */}
       <div className="w-full max-w-lg mx-auto px-4 py-6 pb-8 safe-bottom">
-        {/* Compact Header */}
+        {/* Header */}
         <header className="flex items-center gap-3 mb-6">
           <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
             <Globe className="w-6 h-6 text-primary" />
@@ -55,86 +55,125 @@ const Index = () => {
           </div>
         </header>
 
-        {/* Main Content - Single Column Stack */}
+        {/* Steps */}
         <div className="space-y-4">
-          {/* Location X Card */}
+          {/* Step 1: Select Location */}
           <section className="mobile-card">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-xs font-bold text-primary">X</span>
+              <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-xs font-bold text-primary-foreground">1</span>
               </div>
-              <span className="text-base font-medium text-foreground">From</span>
-              {locationX && (
-                <span className="text-sm text-muted-foreground ml-auto">
-                  {getCurrentTimeInTimezone(locationX.timezone)}
-                </span>
-              )}
+              <span className="text-base font-medium text-foreground">Select Location</span>
             </div>
             <LocationSelector
               label="Source Location"
-              value={locationX}
-              onChange={setLocationX}
+              value={sourceLocation}
+              onChange={setSourceLocation}
             />
-            
-            {/* Date Time Input */}
-            {locationX && (
-              <div className="mt-4 pt-4 border-t border-border animate-fade-in">
-                <DateTimeInput
-                  value={dateTime}
-                  onChange={setDateTime}
-                  isValid={isDateTimeValid || dateTime.length === 0}
-                />
+          </section>
+
+          {/* Step 2: Select Time */}
+          <section className="mobile-card">
+            <div className="flex items-center gap-2 mb-3">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center ${sourceLocation ? 'bg-primary' : 'bg-muted'}`}>
+                <span className={`text-xs font-bold ${sourceLocation ? 'text-primary-foreground' : 'text-muted-foreground'}`}>2</span>
               </div>
+              <span className={`text-base font-medium ${sourceLocation ? 'text-foreground' : 'text-muted-foreground'}`}>Select Time</span>
+            </div>
+            {sourceLocation ? (
+              <DateTimeInput
+                value={dateTime}
+                onChange={setDateTime}
+                isValid={isDateTimeValid || dateTime.length === 0}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground py-2">Select a location first</p>
             )}
           </section>
 
-          {/* Swap Button - Full Width Touch Target */}
-          <div className="flex justify-center py-1">
-            <Button
-              variant="outline"
-              onClick={swapLocations}
-              disabled={!locationX && !locationY}
-              className="w-full h-12 rounded-xl border-2 gap-2 text-base font-medium touch-active"
-            >
-              <ArrowDownUp className="w-5 h-5" />
-              Swap Locations
-            </Button>
-          </div>
-
-          {/* Location Y Card */}
+          {/* Step 3: Add Target Locations */}
           <section className="mobile-card">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center">
-                <span className="text-xs font-bold text-accent">Y</span>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center ${isDateTimeValid ? 'bg-primary' : 'bg-muted'}`}>
+                <span className={`text-xs font-bold ${isDateTimeValid ? 'text-primary-foreground' : 'text-muted-foreground'}`}>3</span>
               </div>
-              <span className="text-base font-medium text-foreground">To</span>
-              {locationY && (
-                <span className="text-sm text-muted-foreground ml-auto">
-                  {getCurrentTimeInTimezone(locationY.timezone)}
-                </span>
-              )}
+              <span className={`text-base font-medium ${isDateTimeValid ? 'text-foreground' : 'text-muted-foreground'}`}>Add Locations to Compare</span>
             </div>
-            <LocationSelector
-              label="Target Location"
-              value={locationY}
-              onChange={setLocationY}
-            />
+            {isDateTimeValid && sourceLocation ? (
+              <div className="space-y-3">
+                <LocationSelector
+                  label="Add Location"
+                  value={null}
+                  onChange={(loc) => loc && addTargetLocation(loc)}
+                />
+                {targetLocations.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {targetLocations.map((loc, index) => (
+                      <div
+                        key={loc.name}
+                        className="flex items-center gap-2 px-3 py-2 bg-secondary rounded-lg text-sm"
+                      >
+                        <span className="text-foreground">{loc.name.split(',')[0]}</span>
+                        <button
+                          onClick={() => removeTargetLocation(index)}
+                          className="p-1 rounded-full touch-active"
+                        >
+                          <X className="w-4 h-4 text-muted-foreground" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground py-2">Complete steps 1 and 2 first</p>
+            )}
           </section>
 
-          {/* Result Section */}
-          <section className="mobile-card">
-            <div className="flex items-center gap-2 mb-3">
-              <Clock className="w-5 h-5 text-primary" />
-              <h2 className="text-base font-semibold text-foreground">Converted Time</h2>
-            </div>
-            
-            <ConversionResult
-              result={result?.converted || null}
-              dayDiff={result?.dayDiff || 0}
-              fromLocation={locationX?.name || 'Source'}
-              toLocation={locationY?.name || 'Target'}
-            />
-          </section>
+          {/* Results */}
+          {showResults && (
+            <section className="mobile-card bg-gradient-to-br from-primary/5 to-accent/5 animate-slide-up">
+              <div className="space-y-4">
+                {/* Header sentence */}
+                <p className="text-base text-foreground leading-relaxed">
+                  At <span className="font-semibold text-primary">{sourceLocation.name}</span> on{' '}
+                  <span className="font-semibold">{formattedSourceTime}</span>, it's:
+                </p>
+
+                {/* Results list */}
+                <div className="space-y-3">
+                  {targetLocations.map((loc, index) => {
+                    const result = getConvertedTime(loc.timezone);
+                    if (!result) return null;
+
+                    return (
+                      <div
+                        key={loc.name}
+                        className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-border"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Clock className="w-5 h-5 text-primary flex-shrink-0" />
+                          <div>
+                            <p className="font-mono text-lg font-semibold text-foreground">
+                              {result.converted}
+                            </p>
+                            {result.dayDiff !== 0 && (
+                              <p className="text-sm text-muted-foreground">
+                                {result.dayDiff > 0
+                                  ? `${result.dayDiff} day${result.dayDiff > 1 ? 's' : ''} later`
+                                  : `${Math.abs(result.dayDiff)} day${Math.abs(result.dayDiff) > 1 ? 's' : ''} earlier`}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-sm text-muted-foreground text-right">{loc.name}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          )}
         </div>
 
         {/* Footer */}

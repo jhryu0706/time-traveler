@@ -289,3 +289,24 @@ export function isValidDateTime(value: string): boolean {
   
   return true;
 }
+
+export function formatDayOfWeek(dateStr: string): string {
+  try {
+    const match = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{1,2}):(\d{2})\s+(AM|PM)$/i);
+    if (!match) return dateStr;
+    
+    const [, month, day, year, hour, minute, ampm] = match;
+    
+    const date = new Date(
+      parseInt(year, 10),
+      parseInt(month, 10) - 1,
+      parseInt(day, 10)
+    );
+    
+    const dayOfWeek = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date);
+    
+    return `${dayOfWeek}, ${month}/${day}/${year} ${hour}:${minute} ${ampm.toUpperCase()}`;
+  } catch {
+    return dateStr;
+  }
+}
