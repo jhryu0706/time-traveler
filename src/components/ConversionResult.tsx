@@ -27,28 +27,30 @@ export default function ConversionResult({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-primary/5 to-accent/5 animate-slide-up">
+    <div className="relative overflow-hidden rounded-xl border-2 border-primary/40 bg-primary/15 animate-slide-up">
       <div className="p-4">
+        {/* Output Header */}
+        <p className="text-xs text-primary font-medium uppercase tracking-wide mb-3">
+          Converted Time
+        </p>
+
         {/* Location flow */}
-        <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
           <span className="truncate flex-1">{fromLocation}</span>
           <ArrowRight className="w-4 h-4 flex-shrink-0 text-primary" />
           <span className="truncate flex-1 text-right">{toLocation}</span>
         </div>
 
-        {/* Result */}
+        {/* Result - matches DateTimeInput selected summary styling */}
         <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <Calendar className="w-6 h-6 text-primary flex-shrink-0" />
-            <span className="text-xl font-semibold text-foreground tracking-wide font-mono">
-              {result}
-            </span>
-          </div>
+          <p className="font-bold text-lg text-foreground">
+            {result}
+          </p>
           
           {/* Day difference indicator */}
           {dayDiff !== 0 && (
             <p className={cn(
-              "text-sm pl-9",
+              "text-sm",
               dayDiff > 0 ? "text-accent" : "text-muted-foreground"
             )}>
               {dayDiff > 0 
