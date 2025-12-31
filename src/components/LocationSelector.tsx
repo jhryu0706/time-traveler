@@ -189,7 +189,7 @@ export default function LocationSelector({ label, value, onChange }: LocationSel
                   <button
                     key={`${city.name}-${city.country}-${index}`}
                     onClick={() => handleCitySelect(city)}
-                    className="w-full px-4 py-4 text-left transition-colors flex items-center justify-between touch-active active:bg-muted/70"
+                    className="w-full px-4 py-4 text-left transition-colors flex items-center justify-between touch-active active:bg-hover hover:bg-hover"
                   >
                     <div className="flex items-center gap-3">
                       <MapPin className="w-5 h-5 text-muted-foreground" />
@@ -237,7 +237,7 @@ export default function LocationSelector({ label, value, onChange }: LocationSel
                 <button
                   key={country.code}
                   onClick={() => handleCountrySelect(country)}
-                  className="w-full px-4 py-4 text-left transition-colors flex items-center gap-3 touch-active active:bg-muted/70"
+                  className="w-full px-4 py-4 text-left transition-colors flex items-center gap-3 touch-active active:bg-hover hover:bg-hover"
                 >
                   <span className="text-foreground text-base">{country.name}</span>
                 </button>
