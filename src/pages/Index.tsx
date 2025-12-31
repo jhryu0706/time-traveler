@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Globe, Plus, X, Clock } from 'lucide-react';
+import { Globe, X } from 'lucide-react';
 import LocationSelector from '@/components/LocationSelector';
 import DateTimeInput from '@/components/DateTimeInput';
 import { convertDateTime, isValidDateTime, formatDayOfWeek } from '@/utils/timezone';
@@ -100,20 +100,20 @@ const Index = () => {
               <span className={`text-base font-medium ${isDateTimeValid ? 'text-foreground' : 'text-muted-foreground'}`}>Add Locations to Compare</span>
             </div>
             {isDateTimeValid && sourceLocation ? (
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 <LocationSelector
                   label="Add Location"
                   value={null}
                   onChange={(loc) => loc && addTargetLocation(loc)}
                 />
                 {targetLocations.length > 0 && (
-                  <div className="flex flex-wrap gap-2 pt-2">
+                  <div className="flex flex-col gap-2 pt-2">
                     {targetLocations.map((loc, index) => (
                       <div
                         key={loc.name}
-                        className="flex items-center gap-2 px-3 py-2 bg-secondary rounded-lg text-sm"
+                        className="flex items-center justify-between px-3 py-2 bg-secondary rounded-lg text-sm"
                       >
-                        <span className="text-foreground">{loc.name.split(',')[0]}</span>
+                        <span className="text-foreground">{loc.name}</span>
                         <button
                           onClick={() => removeTargetLocation(index)}
                           className="p-1 rounded-full touch-active"
@@ -132,40 +132,29 @@ const Index = () => {
 
           {/* Results */}
           {showResults && (
-            <section className="mobile-card bg-gradient-to-br from-primary/5 to-accent/5 animate-slide-up">
+            <section className="mobile-card animate-slide-up">
               <div className="space-y-4">
                 {/* Header sentence */}
                 <p className="text-base text-foreground leading-relaxed">
-                  At <span className="font-semibold text-primary">{sourceLocation.name}</span> on{' '}
-                  <span className="font-semibold">{formattedSourceTime}</span>, it's:
+                  At <span className="font-bold">{sourceLocation.name}</span>
+                  <br />
+                  on <span className="font-bold">{formattedSourceTime}</span>, it's:
                 </p>
 
                 {/* Results list */}
                 <div className="space-y-3">
-                  {targetLocations.map((loc, index) => {
+                  {targetLocations.map((loc) => {
                     const result = getConvertedTime(loc.timezone);
                     if (!result) return null;
 
                     return (
                       <div
                         key={loc.name}
-                        className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-border"
+                        className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg"
                       >
-                        <div className="flex items-center gap-3">
-                          <Clock className="w-5 h-5 text-primary flex-shrink-0" />
-                          <div>
-                            <p className="font-mono text-lg font-semibold text-foreground">
-                              {result.converted}
-                            </p>
-                            {result.dayDiff !== 0 && (
-                              <p className="text-sm text-muted-foreground">
-                                {result.dayDiff > 0
-                                  ? `${result.dayDiff} day${result.dayDiff > 1 ? 's' : ''} later`
-                                  : `${Math.abs(result.dayDiff)} day${Math.abs(result.dayDiff) > 1 ? 's' : ''} earlier`}
-                              </p>
-                            )}
-                          </div>
-                        </div>
+                        <p className="font-mono text-lg font-bold text-foreground">
+                          {result.converted}
+                        </p>
                         <span className="text-sm text-muted-foreground text-right">{loc.name}</span>
                       </div>
                     );
