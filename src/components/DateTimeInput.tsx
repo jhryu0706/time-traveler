@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, forwardRef } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useCallback } from 'react';
 import { Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,8 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
     const hourRef = useRef<HTMLDivElement>(null);
     const minuteRef = useRef<HTMLDivElement>(null);
     const periodRef = useRef<HTMLDivElement>(null);
+    
+    const scrollTimeoutRef = useRef<{ hour?: number; minute?: number; period?: number }>({});
 
     // Update parent value when any component changes
     useEffect(() => {
@@ -58,6 +60,36 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       }
     };
 
+    // Handle scroll end and snap to closest value
+    const handleScrollEnd = useCallback((
+      scrollRef: React.RefObject<HTMLDivElement>,
+      items: number[] | string[],
+      setValue: (val: any) => void,
+      timeoutKey: 'hour' | 'minute' | 'period'
+    ) => {
+      if (scrollTimeoutRef.current[timeoutKey]) {
+        clearTimeout(scrollTimeoutRef.current[timeoutKey]);
+      }
+      
+      scrollTimeoutRef.current[timeoutKey] = window.setTimeout(() => {
+        if (scrollRef.current) {
+          const scrollTop = scrollRef.current.scrollTop;
+          const itemHeight = 44;
+          const closestIndex = Math.round(scrollTop / itemHeight);
+          const clampedIndex = Math.max(0, Math.min(closestIndex, items.length - 1));
+          
+          // Snap to the closest item
+          scrollRef.current.scrollTo({
+            top: clampedIndex * itemHeight,
+            behavior: 'smooth'
+          });
+          
+          // Set the value
+          setValue(items[clampedIndex]);
+        }
+      }, 100);
+    }, []);
+
     useEffect(() => {
       if (timeOpen) {
         setTimeout(() => {
@@ -76,8 +108,9 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       }
     };
 
+    // Format: 12/31/2025 (Wed) at 8:00 PM
     const displayValue = date 
-      ? `${format(date, 'EEE, MMM d, yyyy')} at ${hour}:${String(minute).padStart(2, '0')} ${period}`
+      ? `${format(date, 'MM/dd/yyyy')} (${format(date, 'EEE')}) at ${hour}:${String(minute).padStart(2, '0')} ${period}`
       : '';
 
     return (
@@ -97,7 +130,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
               )}
             >
               <CalendarIcon className="w-5 h-5 flex-shrink-0" />
-              {date ? format(date, 'EEEE, MMMM d, yyyy') : 'Select date'}
+              {date ? `${format(date, 'MM/dd/yyyy')} (${format(date, 'EEE')})` : 'Select date'}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0 bg-popover" align="center">
@@ -141,6 +174,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                     ref={hourRef}
                     className="flex-1 overflow-y-auto hide-scrollbar snap-y snap-mandatory relative z-10"
                     style={{ scrollSnapType: 'y mandatory' }}
+                    onScroll={() => handleScrollEnd(hourRef, hours, setHour, 'hour')}
                   >
                     <div className="h-[68px]" /> {/* Top spacer */}
                     {hours.map((h) => (
@@ -167,6 +201,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                     ref={minuteRef}
                     className="flex-1 overflow-y-auto hide-scrollbar snap-y snap-mandatory relative z-10"
                     style={{ scrollSnapType: 'y mandatory' }}
+                    onScroll={() => handleScrollEnd(minuteRef, minutes, setMinute, 'minute')}
                   >
                     <div className="h-[68px]" />
                     {minutes.map((m) => (
@@ -190,6 +225,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                     ref={periodRef}
                     className="w-16 overflow-y-auto hide-scrollbar snap-y snap-mandatory relative z-10"
                     style={{ scrollSnapType: 'y mandatory' }}
+                    onScroll={() => handleScrollEnd(periodRef, periods, (p: string) => setPeriod(p as 'AM' | 'PM'), 'period')}
                   >
                     <div className="h-[68px]" />
                     {periods.map((p) => (
