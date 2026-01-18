@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, MapPin, Clock, MousePointerClick } from 'lucide-react';
+import { Plus, X, MapPin, Clock, Pointer } from 'lucide-react';
 import LocationSelector from '@/components/LocationSelector';
 import DateTimeInput from '@/components/DateTimeInput';
 import { convertDateTime, isValidDateTime, formatDayOfWeek } from '@/utils/timezone';
@@ -121,11 +121,10 @@ const Index = () => {
             onClick={() => setLocationSelectorOpen(true)}
             className="w-full text-left"
           >
-            <div className="flex items-center gap-2 mb-1">
-              <MousePointerClick className="w-4 h-4 text-muted-foreground" />
-              <span className="text-[15px] text-foreground font-medium">Select your first location</span>
+            <div className="flex items-center gap-2">
+              <Pointer className="w-4 h-4 text-muted-foreground" />
+              <span className="text-[15px] text-foreground font-medium">Tap to select your first location</span>
             </div>
-            <p className="text-[13px] text-muted-foreground pl-6">Tap here to get started</p>
           </button>
         ) : (
           /* Has location - show normal header */
@@ -164,22 +163,56 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setLocationSelectorOpen(true)}
-                className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
-              >
-                <MapPin className="w-3.5 h-3.5" />
-                <span>Edit location</span>
-              </button>
-              <button 
-                onClick={() => setTimeSelectorOpen(true)}
-                className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
-              >
-                <Clock className="w-3.5 h-3.5" />
-                <span>Edit time</span>
-              </button>
-            </div>
+            {/* Time Selection Buttons - only show after location is set */}
+            {sourceLocation && !isDateTimeValid && (
+              <div className="flex gap-3 animate-fade-in">
+                <button 
+                  onClick={() => {
+                    // Set to current local time
+                    const now = new Date();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const year = now.getFullYear();
+                    let hours = now.getHours();
+                    const minutes = now.getMinutes();
+                    const period = hours >= 12 ? 'PM' : 'AM';
+                    hours = hours % 12 || 12;
+                    setDateTime(`${month}/${day}/${year} ${hours}:${String(minutes).padStart(2, '0')} ${period}`);
+                  }}
+                  className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Set to local time</span>
+                </button>
+                <button 
+                  onClick={() => setTimeSelectorOpen(true)}
+                  className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Select time</span>
+                </button>
+              </div>
+            )}
+
+            {/* Edit buttons - show when time is already set */}
+            {isDateTimeValid && (
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setLocationSelectorOpen(true)}
+                  className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>Edit location</span>
+                </button>
+                <button 
+                  onClick={() => setTimeSelectorOpen(true)}
+                  className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Edit time</span>
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -206,7 +239,7 @@ const Index = () => {
       />
 
       {/* Add Button */}
-      <div className="px-6 py-3 bg-[hsl(0,0%,6%)]">
+      <div className="px-6 py-3 bg-[hsl(0,0%,6%)] flex justify-end">
         <button 
           className="text-primary text-[17px] flex items-center gap-2"
           onClick={() => setShowAddCity(!showAddCity)}
