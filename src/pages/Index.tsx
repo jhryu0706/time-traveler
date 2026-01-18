@@ -147,13 +147,8 @@ const Index = () => {
 
   return (
     <div className="h-screen bg-background text-foreground flex flex-col dark">
-      {/* App Title */}
-      <div className="px-6 pt-10 pb-2 text-center">
-        <span className="text-[15px] text-foreground">Time Converter</span>
-      </div>
-
       {/* Header - Conditional based on location availability */}
-      <div className="px-6 pt-4 pb-6 border-b border-border/70" style={{ borderBottomWidth: '0.7px' }}>
+      <div className="px-6 pt-14 pb-6">
         {locationPermissionDenied && !sourceLocation ? (
           /* No location - show prompt to select */
           <button 
@@ -284,10 +279,10 @@ const Index = () => {
         onOpenChange={setTimeSelectorOpen}
       />
 
-      {/* Add/Remove Buttons */}
-      <div className="px-6 py-3 bg-[hsl(0,0%,6%)] flex justify-between">
+      {/* Add/Remove Buttons with Title */}
+      <div className="px-6 py-3 bg-background flex justify-between items-center">
         <button 
-          className="text-primary text-[17px] flex items-center gap-2"
+          className="text-primary text-[17px] font-bold flex items-center gap-2"
           onClick={() => {
             setRemoveMode(!removeMode);
             if (showAddCity) setShowAddCity(false);
@@ -305,8 +300,11 @@ const Index = () => {
             </>
           )}
         </button>
+        
+        <span className="text-[17px] text-foreground font-bold">Time Converter</span>
+        
         <button 
-          className="text-primary text-[17px] flex items-center gap-2"
+          className="text-primary text-[17px] font-bold flex items-center gap-2"
           onClick={() => {
             setShowAddCity(!showAddCity);
             if (removeMode) setRemoveMode(false);
@@ -328,7 +326,7 @@ const Index = () => {
 
       {/* Add City Panel */}
       {showAddCity && (
-        <div className="bg-[hsl(0,0%,6%)] p-4 animate-slide-up">
+        <div className="bg-background p-4 animate-slide-up">
           <LocationSelector
             label="Add Location"
             value={null}
@@ -338,7 +336,7 @@ const Index = () => {
       )}
 
       {/* Cities List */}
-      <div className="flex-1 overflow-y-auto bg-[hsl(0,0%,6%)]">
+      <div className="flex-1 overflow-y-auto bg-background">
         {targetLocations.length === 0 && !showAddCity && (
           <div className="px-6 py-8 text-center text-muted-foreground">
             <p className="text-[15px]">No cities added yet</p>
