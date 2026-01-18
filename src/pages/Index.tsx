@@ -167,9 +167,9 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Location Permission Prompt */}
+      {/* Location Permission Prompt - only show if denied and no location set */}
       {locationPermissionDenied && !sourceLocation && (
-        <div className="px-6 py-4 bg-primary/10 border-b border-border animate-slide-up">
+        <div className="px-6 py-4 bg-background border-b border-border animate-slide-up">
           <p className="text-[15px] text-foreground font-medium">Select your first location</p>
           <p className="text-[13px] text-muted-foreground mt-1">Tap "Edit location" above to get started</p>
         </div>
