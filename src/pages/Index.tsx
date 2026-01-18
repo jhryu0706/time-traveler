@@ -150,13 +150,22 @@ const Index = () => {
       {/* Header - Conditional based on location availability */}
       <div className="px-6 pt-14 pb-6">
         {locationPermissionDenied && !sourceLocation ? (
-          /* No location - show prompt to select */
-          <button 
-            onClick={() => setLocationSelectorOpen(true)}
-            className="w-full text-left"
-          >
-            <span className="text-[32px] text-foreground">Tap to select your first location</span>
-          </button>
+          /* No location - show onboarding */
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <p 
+              className="text-[20px] text-foreground mb-8 leading-relaxed"
+              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            >
+              Let's get started by adding your first location
+            </p>
+            <button 
+              onClick={() => setLocationSelectorOpen(true)}
+              className="bg-primary text-primary-foreground px-8 py-4 rounded-full text-[17px] font-semibold btn-press shadow-lg"
+              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            >
+              Add first location
+            </button>
+          </div>
         ) : (
           /* Has location - show normal header */
           <>
@@ -336,7 +345,7 @@ const Index = () => {
       )}
 
       {/* Cities List */}
-      <div className="flex-1 overflow-y-auto bg-background">
+      <div className="flex-1 overflow-y-auto bg-background pt-3 pb-6">
         {targetLocations.length === 0 && !showAddCity && (
           <div className="px-6 py-8 text-center text-muted-foreground">
             <p className="text-[15px]">No cities added yet</p>
@@ -367,19 +376,19 @@ const Index = () => {
           return (
             <div 
               key={location.name}
-              className="py-5"
+              className="mx-4 mb-3 city-card p-4 animate-fade-in"
+              style={{
+                background: `linear-gradient(135deg, hsl(0 0% ${8 + (index % 3) * 2}%) 0%, hsl(0 0% ${6 + (index % 3) * 2}%) 100%)`
+              }}
             >
-              {index !== 0 && (
-                <div className="mx-6 border-t border-border/70 mb-5" style={{ borderTopWidth: '0.7px' }} />
-              )}
               {/* Secondary header */}
-              <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2 px-6">
+              <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
                 <span>{displayDate}</span>
                 <span>{timeDiff}</span>
               </div>
               
               {/* Main content - Time and City */}
-              <div className="flex justify-between items-baseline px-6">
+              <div className="flex justify-between items-baseline">
                 <div className="flex items-center gap-3">
                   {removeMode && (
                     <button
