@@ -1,8 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, MapPin, Clock, Pointer } from 'lucide-react';
+import { Plus, X, MapPin, Clock, Pointer, Menu, Minus } from 'lucide-react';
 import LocationSelector from '@/components/LocationSelector';
 import DateTimeInput from '@/components/DateTimeInput';
 import { convertDateTime, isValidDateTime, formatDayOfWeek } from '@/utils/timezone';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Location {
   name: string;
@@ -21,6 +33,8 @@ const Index = () => {
   const [timeSelectorOpen, setTimeSelectorOpen] = useState(false);
   const [locationPermissionDenied, setLocationPermissionDenied] = useState(false);
   const [hasRequestedLocation, setHasRequestedLocation] = useState(false);
+  const [showTimeChoiceDialog, setShowTimeChoiceDialog] = useState(false);
+  const [removeMode, setRemoveMode] = useState(false);
 
   const isDateTimeValid = isValidDateTime(dateTime);
 
@@ -42,6 +56,8 @@ const Index = () => {
             lat: latitude,
             lng: longitude,
           });
+          // Show time choice dialog after location is set
+          setShowTimeChoiceDialog(true);
         },
         (error) => {
           console.log('Geolocation denied or unavailable:', error.message);
@@ -109,6 +125,24 @@ const Index = () => {
     return `${dayDiff} day${dayDiff < -1 ? 's' : ''}`;
   };
 
+  const handleSetLocalTime = () => {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const year = now.getFullYear();
+    let hours = now.getHours();
+    const minutes = now.getMinutes();
+    const period = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    setDateTime(`${month}/${day}/${year} ${hours}:${String(minutes).padStart(2, '0')} ${period}`);
+    setShowTimeChoiceDialog(false);
+  };
+
+  const handleSelectTime = () => {
+    setShowTimeChoiceDialog(false);
+    setTimeSelectorOpen(true);
+  };
+
   const time12 = formatTime12Hour(currentTime);
 
   return (
@@ -129,10 +163,40 @@ const Index = () => {
         ) : (
           /* Has location - show normal header */
           <>
+            {/* Edit Location/Time Menu - top right */}
+            {sourceLocation && isDateTimeValid && (
+              <div className="flex justify-end mb-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="text-primary flex items-center gap-1.5 text-[15px]">
+                      <Menu className="w-5 h-5" />
+                      <span>Edit Location/Time</span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-card border-border">
+                    <DropdownMenuItem 
+                      onClick={() => setLocationSelectorOpen(true)}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <MapPin className="w-4 h-4" />
+                      <span>Edit location</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => setTimeSelectorOpen(true)}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <Clock className="w-4 h-4" />
+                      <span>Edit time</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+
             {/* Secondary header */}
             <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
               <span>{formatDate(currentTime)}</span>
-              <span>{sourceLocation ? 'Source time' : 'Your time'}</span>
+              <span className="text-foreground">Source time and location</span>
             </div>
 
             {/* Main content - Time and Location */}
@@ -162,60 +226,34 @@ const Index = () => {
                 )}
               </div>
             </div>
-
-            {/* Time Selection Buttons - only show after location is set */}
-            {sourceLocation && !isDateTimeValid && (
-              <div className="flex gap-3 animate-fade-in">
-                <button 
-                  onClick={() => {
-                    // Set to current local time
-                    const now = new Date();
-                    const month = String(now.getMonth() + 1).padStart(2, '0');
-                    const day = String(now.getDate()).padStart(2, '0');
-                    const year = now.getFullYear();
-                    let hours = now.getHours();
-                    const minutes = now.getMinutes();
-                    const period = hours >= 12 ? 'PM' : 'AM';
-                    hours = hours % 12 || 12;
-                    setDateTime(`${month}/${day}/${year} ${hours}:${String(minutes).padStart(2, '0')} ${period}`);
-                  }}
-                  className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
-                >
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>Set to local time</span>
-                </button>
-                <button 
-                  onClick={() => setTimeSelectorOpen(true)}
-                  className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
-                >
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>Select time</span>
-                </button>
-              </div>
-            )}
-
-            {/* Edit buttons - show when time is already set */}
-            {isDateTimeValid && (
-              <div className="flex gap-3">
-                <button 
-                  onClick={() => setLocationSelectorOpen(true)}
-                  className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
-                >
-                  <MapPin className="w-3.5 h-3.5" />
-                  <span>Edit location</span>
-                </button>
-                <button 
-                  onClick={() => setTimeSelectorOpen(true)}
-                  className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
-                >
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>Edit time</span>
-                </button>
-              </div>
-            )}
           </>
         )}
       </div>
+
+      {/* Time Choice Dialog - forces user to select */}
+      <Dialog open={showTimeChoiceDialog} onOpenChange={setShowTimeChoiceDialog}>
+        <DialogContent className="bg-card border-border max-w-[300px]">
+          <DialogHeader>
+            <DialogTitle className="text-center text-foreground">Select Time</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 pt-2">
+            <button 
+              onClick={handleSetLocalTime}
+              className="w-full px-4 py-3 bg-background rounded-lg text-[15px] text-foreground border border-border flex items-center justify-center gap-2 hover:bg-hover transition-colors"
+            >
+              <Clock className="w-4 h-4" />
+              <span>Set to local time</span>
+            </button>
+            <button 
+              onClick={handleSelectTime}
+              className="w-full px-4 py-3 bg-background rounded-lg text-[15px] text-foreground border border-border flex items-center justify-center gap-2 hover:bg-hover transition-colors"
+            >
+              <Clock className="w-4 h-4" />
+              <span>Select time</span>
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Location Selector Sheet */}
       <LocationSelector
@@ -223,7 +261,13 @@ const Index = () => {
         value={sourceLocation}
         onChange={(loc) => {
           setSourceLocation(loc);
-          if (loc) setLocationSelectorOpen(false);
+          if (loc) {
+            setLocationSelectorOpen(false);
+            // Show time choice dialog after manual location selection
+            if (!isDateTimeValid) {
+              setShowTimeChoiceDialog(true);
+            }
+          }
         }}
         isOpen={locationSelectorOpen}
         onOpenChange={setLocationSelectorOpen}
@@ -238,11 +282,33 @@ const Index = () => {
         onOpenChange={setTimeSelectorOpen}
       />
 
-      {/* Add Button */}
-      <div className="px-6 py-3 bg-[hsl(0,0%,6%)] flex justify-end">
+      {/* Add/Remove Buttons */}
+      <div className="px-6 py-3 bg-[hsl(0,0%,6%)] flex justify-between">
         <button 
           className="text-primary text-[17px] flex items-center gap-2"
-          onClick={() => setShowAddCity(!showAddCity)}
+          onClick={() => {
+            setRemoveMode(!removeMode);
+            if (showAddCity) setShowAddCity(false);
+          }}
+        >
+          {removeMode ? (
+            <>
+              <X className="w-5 h-5" />
+              <span>Done</span>
+            </>
+          ) : (
+            <>
+              <Minus className="w-5 h-5" />
+              <span>Remove</span>
+            </>
+          )}
+        </button>
+        <button 
+          className="text-primary text-[17px] flex items-center gap-2"
+          onClick={() => {
+            setShowAddCity(!showAddCity);
+            if (removeMode) setRemoveMode(false);
+          }}
         >
           {showAddCity ? (
             <>
@@ -315,13 +381,15 @@ const Index = () => {
               {/* Main content - Time and City */}
               <div className="flex justify-between items-baseline">
                 <div className="flex items-center gap-3">
+                  {removeMode && (
+                    <button
+                      onClick={() => removeTargetLocation(index)}
+                      className="text-destructive animate-fade-in"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  )}
                   <span className="text-[32px] text-foreground">{location.name.split(',')[0]}</span>
-                  <button
-                    onClick={() => removeTargetLocation(index)}
-                    className="text-destructive opacity-60 hover:opacity-100 transition-opacity"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
                 </div>
                 
                 <div className="flex items-baseline gap-2">
