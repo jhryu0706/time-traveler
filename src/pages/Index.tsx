@@ -147,15 +147,20 @@ const Index = () => {
 
   return (
     <div className="h-screen bg-background text-foreground flex flex-col dark">
+      {/* App Title */}
+      <div className="px-6 pt-10 pb-2 text-center">
+        <span className="text-[15px] text-foreground">Time Converter</span>
+      </div>
+
       {/* Header - Conditional based on location availability */}
-      <div className="px-6 pt-14 pb-6 border-b border-border">
+      <div className="px-6 pt-4 pb-6 border-b border-border/70" style={{ borderBottomWidth: '0.7px' }}>
         {locationPermissionDenied && !sourceLocation ? (
           /* No location - show prompt to select */
           <button 
             onClick={() => setLocationSelectorOpen(true)}
             className="w-full text-left"
           >
-            <span className="text-[32px] text-primary">Tap to select your first location</span>
+            <span className="text-[32px] text-foreground">Tap to select your first location</span>
           </button>
         ) : (
           /* Has location - show normal header */
@@ -364,18 +369,19 @@ const Index = () => {
           return (
             <div 
               key={location.name}
-              className={`px-6 py-5 ${
-                index !== targetLocations.length - 1 ? 'border-b border-border' : ''
-              }`}
+              className="py-5"
             >
+              {index !== 0 && (
+                <div className="mx-6 border-t border-border/70 mb-5" style={{ borderTopWidth: '0.7px' }} />
+              )}
               {/* Secondary header */}
-              <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
+              <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2 px-6">
                 <span>{displayDate}</span>
                 <span>{timeDiff}</span>
               </div>
               
               {/* Main content - Time and City */}
-              <div className="flex justify-between items-baseline">
+              <div className="flex justify-between items-baseline px-6">
                 <div className="flex items-center gap-3">
                   {removeMode && (
                     <button
