@@ -17,10 +17,42 @@ const Index = () => {
   const [dateTime, setDateTime] = useState('');
   const [targetLocations, setTargetLocations] = useState<Location[]>([]);
   const [showAddCity, setShowAddCity] = useState(false);
-  const [editingSource, setEditingSource] = useState(false);
-  const [editingTime, setEditingTime] = useState(false);
+  const [locationSelectorOpen, setLocationSelectorOpen] = useState(false);
+  const [timeSelectorOpen, setTimeSelectorOpen] = useState(false);
+  const [locationPermissionDenied, setLocationPermissionDenied] = useState(false);
+  const [hasRequestedLocation, setHasRequestedLocation] = useState(false);
 
   const isDateTimeValid = isValidDateTime(dateTime);
+
+  // Request user location on mount
+  useEffect(() => {
+    if (hasRequestedLocation) return;
+    setHasRequestedLocation(true);
+    
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // Get timezone from coordinates
+          const { latitude, longitude } = position.coords;
+          // Use a simple lookup - in production you'd use a proper API
+          const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          setSourceLocation({
+            name: 'Current Location',
+            timezone: userTimezone,
+            lat: latitude,
+            lng: longitude,
+          });
+        },
+        (error) => {
+          console.log('Geolocation denied or unavailable:', error.message);
+          setLocationPermissionDenied(true);
+        },
+        { timeout: 10000 }
+      );
+    } else {
+      setLocationPermissionDenied(true);
+    }
+  }, [hasRequestedLocation]);
 
   // Update current time every second
   useEffect(() => {
@@ -119,14 +151,14 @@ const Index = () => {
 
         <div className="flex gap-3">
           <button 
-            onClick={() => setEditingSource(!editingSource)}
+            onClick={() => setLocationSelectorOpen(true)}
             className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
           >
             <MapPin className="w-3.5 h-3.5" />
             <span>Edit location</span>
           </button>
           <button 
-            onClick={() => setEditingTime(!editingTime)}
+            onClick={() => setTimeSelectorOpen(true)}
             className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
           >
             <Clock className="w-3.5 h-3.5" />
@@ -135,30 +167,34 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Edit Source Location Panel */}
-      {editingSource && (
-        <div className="bg-card border-b border-border p-4 animate-slide-up">
-          <LocationSelector
-            label="Source Location"
-            value={sourceLocation}
-            onChange={(loc) => {
-              setSourceLocation(loc);
-              if (loc) setEditingSource(false);
-            }}
-          />
+      {/* Location Permission Prompt */}
+      {locationPermissionDenied && !sourceLocation && (
+        <div className="px-6 py-4 bg-primary/10 border-b border-border animate-slide-up">
+          <p className="text-[15px] text-foreground font-medium">Select your first location</p>
+          <p className="text-[13px] text-muted-foreground mt-1">Tap "Edit location" above to get started</p>
         </div>
       )}
 
-      {/* Edit Time Panel */}
-      {editingTime && (
-        <div className="bg-card border-b border-border p-4 animate-slide-up">
-          <DateTimeInput
-            value={dateTime}
-            onChange={setDateTime}
-            isValid={isDateTimeValid || dateTime.length === 0}
-          />
-        </div>
-      )}
+      {/* Location Selector Sheet */}
+      <LocationSelector
+        label="Source Location"
+        value={sourceLocation}
+        onChange={(loc) => {
+          setSourceLocation(loc);
+          if (loc) setLocationSelectorOpen(false);
+        }}
+        isOpen={locationSelectorOpen}
+        onOpenChange={setLocationSelectorOpen}
+      />
+
+      {/* Time Selector Sheet */}
+      <DateTimeInput
+        value={dateTime}
+        onChange={setDateTime}
+        isValid={isDateTimeValid || dateTime.length === 0}
+        isOpen={timeSelectorOpen}
+        onOpenChange={setTimeSelectorOpen}
+      />
 
       {/* Add Button */}
       <div className="px-6 py-3 border-b border-border">
