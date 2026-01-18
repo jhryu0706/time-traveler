@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, MapPin, Clock, Pointer, Menu, Minus } from 'lucide-react';
+import { Plus, X, MapPin, Clock, Menu, Minus } from 'lucide-react';
 import LocationSelector from '@/components/LocationSelector';
 import DateTimeInput from '@/components/DateTimeInput';
 import { convertDateTime, isValidDateTime, formatDayOfWeek } from '@/utils/timezone';
@@ -155,10 +155,7 @@ const Index = () => {
             onClick={() => setLocationSelectorOpen(true)}
             className="w-full text-left"
           >
-            <div className="flex items-center gap-2">
-              <Pointer className="w-4 h-4 text-muted-foreground" />
-              <span className="text-[15px] text-foreground font-medium">Tap to select your first location</span>
-            </div>
+            <span className="text-[32px] text-primary">Tap to select your first location</span>
           </button>
         ) : (
           /* Has location - show normal header */
@@ -340,7 +337,6 @@ const Index = () => {
         {targetLocations.length === 0 && !showAddCity && (
           <div className="px-6 py-8 text-center text-muted-foreground">
             <p className="text-[15px]">No cities added yet</p>
-            <p className="text-[13px] mt-1">Tap "Add City" to compare times</p>
           </div>
         )}
 
