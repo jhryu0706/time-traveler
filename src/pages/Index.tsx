@@ -145,30 +145,40 @@ const Index = () => {
 
   const time12 = formatTime12Hour(currentTime);
 
+  // Check if we're in onboarding state (no source location selected yet)
+  const isOnboarding = locationPermissionDenied && !sourceLocation;
+
   return (
     <div className="h-screen bg-background text-foreground flex flex-col dark">
-      {/* Header - Conditional based on location availability */}
-      <div className="px-6 pt-14 pb-6">
-        {locationPermissionDenied && !sourceLocation ? (
-          /* No location - show onboarding */
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p 
-              className="text-[20px] text-foreground mb-8 leading-relaxed"
-              style={{ fontFamily: "'Inter Tight', sans-serif" }}
-            >
-              Let's get started by adding your first location
-            </p>
-            <button 
-              onClick={() => setLocationSelectorOpen(true)}
-              className="bg-primary text-primary-foreground px-8 py-4 rounded-full text-[17px] font-semibold btn-press shadow-lg"
-              style={{ fontFamily: "'Inter Tight', sans-serif" }}
-            >
-              Add first location
-            </button>
-          </div>
-        ) : (
-          /* Has location - show normal header */
-          <>
+      {isOnboarding && (
+        /* Onboarding - Full screen welcome */
+        <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+          <h1 
+            className="text-[28px] text-foreground mb-4 font-medium tracking-tight"
+            style={{ fontFamily: "'Inter Tight', sans-serif" }}
+          >
+            Time Converter
+          </h1>
+          <p 
+            className="text-[17px] text-muted-foreground mb-12 leading-relaxed max-w-[280px]"
+            style={{ fontFamily: "'Inter Tight', sans-serif" }}
+          >
+            Let's get started by adding your first location
+          </p>
+          <button 
+            onClick={() => setLocationSelectorOpen(true)}
+            className="bg-foreground text-background px-10 py-4 rounded-full text-[17px] font-semibold btn-press btn-shimmer shadow-xl"
+            style={{ fontFamily: "'Inter Tight', sans-serif" }}
+          >
+            Add first location
+          </button>
+        </div>
+      )}
+
+      {!isOnboarding && (
+        <>
+          {/* Header */}
+          <div className="px-6 pt-14 pb-6">
             {/* Edit Location/Time Menu - top right */}
             {sourceLocation && isDateTimeValid && (
               <div className="flex justify-end mb-2">
@@ -232,9 +242,7 @@ const Index = () => {
                 )}
               </div>
             </div>
-          </>
-        )}
-      </div>
+          </div>
 
       {/* Time Choice Dialog - forces user to select */}
       <Dialog open={showTimeChoiceDialog} onOpenChange={setShowTimeChoiceDialog}>
@@ -414,6 +422,8 @@ const Index = () => {
           );
         })}
       </div>
+        </>
+      )}
     </div>
   );
 };
