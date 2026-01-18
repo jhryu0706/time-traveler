@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, MapPin, Clock } from 'lucide-react';
+import { Plus, X, MapPin, Clock, MousePointerClick } from 'lucide-react';
 import LocationSelector from '@/components/LocationSelector';
 import DateTimeInput from '@/components/DateTimeInput';
 import { convertDateTime, isValidDateTime, formatDayOfWeek } from '@/utils/timezone';
@@ -113,67 +113,76 @@ const Index = () => {
 
   return (
     <div className="h-screen bg-background text-foreground flex flex-col dark">
-      {/* Header - User's Current Time Banner */}
+      {/* Header - Conditional based on location availability */}
       <div className="px-6 pt-14 pb-6 border-b border-border">
-        {/* Secondary header */}
-        <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
-          <span>{formatDate(currentTime)}</span>
-          <span>{sourceLocation ? 'Source time' : 'Your time'}</span>
-        </div>
-
-        {/* Main content - Time and Location */}
-        <div className="flex justify-between items-baseline mb-4">
-          <span className="text-[32px] text-primary">
-            {sourceLocation ? sourceLocation.name.split(',')[0] : 'Local'}
-          </span>
-          <div className="flex items-baseline gap-2">
-            {isDateTimeValid ? (
-              <>
-                <span className="text-[32px] leading-none font-light tabular-nums text-primary">
-                  {formatDayOfWeek(dateTime).split(' at ')[1]?.split(' ')[0] || time12.hours + ':' + time12.minutes}
-                </span>
-                <span className="text-[13px] text-muted-foreground">
-                  {formatDayOfWeek(dateTime).split(' at ')[1]?.split(' ')[1] || time12.ampm}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="text-[32px] leading-none font-light tabular-nums text-primary">
-                  {time12.hours}:{time12.minutes}
-                </span>
-                <span className="text-[13px] text-muted-foreground">
-                  {time12.ampm}
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="flex gap-3">
+        {locationPermissionDenied && !sourceLocation ? (
+          /* No location - show prompt to select */
           <button 
             onClick={() => setLocationSelectorOpen(true)}
-            className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
+            className="w-full text-left"
           >
-            <MapPin className="w-3.5 h-3.5" />
-            <span>Edit location</span>
+            <div className="flex items-center gap-3 mb-2">
+              <MousePointerClick className="w-6 h-6 text-primary" />
+              <span className="text-[32px] text-primary">Select your first location</span>
+            </div>
+            <p className="text-[13px] text-muted-foreground">Tap here to get started</p>
           </button>
-          <button 
-            onClick={() => setTimeSelectorOpen(true)}
-            className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
-          >
-            <Clock className="w-3.5 h-3.5" />
-            <span>Edit time</span>
-          </button>
-        </div>
-      </div>
+        ) : (
+          /* Has location - show normal header */
+          <>
+            {/* Secondary header */}
+            <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
+              <span>{formatDate(currentTime)}</span>
+              <span>{sourceLocation ? 'Source time' : 'Your time'}</span>
+            </div>
 
-      {/* Location Permission Prompt - only show if denied and no location set */}
-      {locationPermissionDenied && !sourceLocation && (
-        <div className="px-6 py-4 bg-background border-b border-border animate-slide-up">
-          <p className="text-[15px] text-foreground font-medium">Select your first location</p>
-          <p className="text-[13px] text-muted-foreground mt-1">Tap "Edit location" above to get started</p>
-        </div>
-      )}
+            {/* Main content - Time and Location */}
+            <div className="flex justify-between items-baseline mb-4">
+              <span className="text-[32px] text-primary">
+                {sourceLocation ? sourceLocation.name.split(',')[0] : 'Local'}
+              </span>
+              <div className="flex items-baseline gap-2">
+                {isDateTimeValid ? (
+                  <>
+                    <span className="text-[32px] leading-none font-light tabular-nums text-primary">
+                      {formatDayOfWeek(dateTime).split(' at ')[1]?.split(' ')[0] || time12.hours + ':' + time12.minutes}
+                    </span>
+                    <span className="text-[13px] text-muted-foreground">
+                      {formatDayOfWeek(dateTime).split(' at ')[1]?.split(' ')[1] || time12.ampm}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[32px] leading-none font-light tabular-nums text-primary">
+                      {time12.hours}:{time12.minutes}
+                    </span>
+                    <span className="text-[13px] text-muted-foreground">
+                      {time12.ampm}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setLocationSelectorOpen(true)}
+                className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                <span>Edit location</span>
+              </button>
+              <button 
+                onClick={() => setTimeSelectorOpen(true)}
+                className="px-3 py-1.5 bg-card rounded-lg text-[13px] text-foreground border border-border flex items-center gap-1.5 hover:bg-hover transition-colors"
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>Edit time</span>
+              </button>
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Location Selector Sheet */}
       <LocationSelector
