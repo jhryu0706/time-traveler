@@ -121,11 +121,11 @@ const Index = () => {
             onClick={() => setLocationSelectorOpen(true)}
             className="w-full text-left"
           >
-            <div className="flex items-center gap-3 mb-2">
-              <MousePointerClick className="w-6 h-6 text-primary" />
-              <span className="text-[32px] text-primary">Select your first location</span>
+            <div className="flex items-center gap-2 mb-1">
+              <MousePointerClick className="w-4 h-4 text-muted-foreground" />
+              <span className="text-[15px] text-foreground font-medium">Select your first location</span>
             </div>
-            <p className="text-[13px] text-muted-foreground">Tap here to get started</p>
+            <p className="text-[13px] text-muted-foreground pl-6">Tap here to get started</p>
           </button>
         ) : (
           /* Has location - show normal header */
@@ -206,7 +206,7 @@ const Index = () => {
       />
 
       {/* Add Button */}
-      <div className="px-6 py-3 border-b border-border">
+      <div className="px-6 py-3 bg-[hsl(0,0%,6%)]">
         <button 
           className="text-primary text-[17px] flex items-center gap-2"
           onClick={() => setShowAddCity(!showAddCity)}
@@ -227,7 +227,7 @@ const Index = () => {
 
       {/* Add City Panel */}
       {showAddCity && (
-        <div className="bg-card border-b border-border p-4 animate-slide-up">
+        <div className="bg-[hsl(0,0%,6%)] p-4 animate-slide-up">
           <LocationSelector
             label="Add Location"
             value={null}
@@ -237,7 +237,7 @@ const Index = () => {
       )}
 
       {/* Cities List */}
-      <div className="flex-1 overflow-y-auto bg-background">
+      <div className="flex-1 overflow-y-auto bg-[hsl(0,0%,6%)]">
         {targetLocations.length === 0 && !showAddCity && (
           <div className="px-6 py-8 text-center text-muted-foreground">
             <p className="text-[15px]">No cities added yet</p>
