@@ -48,16 +48,25 @@ const Index = () => {
         (position) => {
           // Get timezone from coordinates
           const { latitude, longitude } = position.coords;
-          // Use a simple lookup - in production you'd use a proper API
           const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          // Extract city name from timezone (e.g., "America/New_York" -> "New York")
+          const cityFromTimezone = userTimezone.split('/').pop()?.replace(/_/g, ' ') || 'Local';
           setSourceLocation({
-            name: 'Current Location',
+            name: cityFromTimezone,
             timezone: userTimezone,
             lat: latitude,
             lng: longitude,
           });
-          // Show time choice dialog after location is set
-          setShowTimeChoiceDialog(true);
+          // Auto-set to local time when geolocation succeeds
+          const now = new Date();
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          const day = String(now.getDate()).padStart(2, '0');
+          const year = now.getFullYear();
+          let hours = now.getHours();
+          const minutes = now.getMinutes();
+          const period = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12 || 12;
+          setDateTime(`${month}/${day}/${year} ${hours}:${String(minutes).padStart(2, '0')} ${period}`);
         },
         (error) => {
           console.log('Geolocation denied or unavailable:', error.message);
@@ -150,8 +159,18 @@ const Index = () => {
 
   return (
     <div className="h-screen bg-background text-foreground flex flex-col dark">
+      {/* TIME CONVERTER Logo - Always at top */}
+      <div className="px-6 pt-14 pb-4">
+        <h1 
+          className="text-[13px] text-muted-foreground tracking-[0.2em] uppercase text-center"
+          style={{ fontFamily: "'Inter Tight', sans-serif" }}
+        >
+          Time Converter
+        </h1>
+      </div>
+
       {/* Header */}
-      <div className="px-6 pt-14 pb-6">
+      <div className="px-6 pb-6">
             {/* Edit Location/Time Menu - top right */}
             {sourceLocation && isDateTimeValid && (
               <div className="flex justify-end mb-2">
@@ -327,24 +346,12 @@ const Index = () => {
 
       {/* Cities List */}
       <div className="flex-1 overflow-y-auto bg-background pt-3 pb-6">
-        {/* Onboarding - show when no source location */}
+        {/* Onboarding - show when location permission denied */}
         {isOnboarding && (
-          <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-            <h1 
-              className="text-[28px] text-foreground mb-4 font-medium tracking-tight"
-              style={{ fontFamily: "'Inter Tight', sans-serif" }}
-            >
-              Time Converter
-            </h1>
-            <p 
-              className="text-[17px] text-muted-foreground mb-12 leading-relaxed max-w-[280px]"
-              style={{ fontFamily: "'Inter Tight', sans-serif" }}
-            >
-              Let's get started by adding your first location
-            </p>
+          <div className="flex flex-col items-center justify-center py-16 px-8">
             <button 
               onClick={() => setLocationSelectorOpen(true)}
-              className="bg-foreground text-background px-10 py-4 rounded-full text-[17px] font-semibold btn-press btn-shimmer shadow-xl"
+              className="bg-white/10 backdrop-blur-sm text-muted-foreground px-8 py-4 rounded-2xl text-[17px] font-medium btn-press border border-white/5"
               style={{ fontFamily: "'Inter Tight', sans-serif" }}
             >
               Add first location
