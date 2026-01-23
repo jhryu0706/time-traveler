@@ -1,40 +1,6 @@
-import { cities, City } from '@/data/cities';
-
 export interface TimezoneInfo {
   timezone: string;
   currentTime: string;
-}
-
-export function getTimezoneFromCoordinates(lat: number, lng: number): string {
-  // Approximate timezone calculation based on longitude
-  // This is a simplified approach - for production, use a proper API or database
-  const hourOffset = Math.round(lng / 15);
-  
-  // Try to find the closest city
-  let closestCity: City | null = null;
-  let minDistance = Infinity;
-  
-  for (const city of cities) {
-    const distance = Math.sqrt(
-      Math.pow(city.lat - lat, 2) + Math.pow(city.lng - lng, 2)
-    );
-    if (distance < minDistance) {
-      minDistance = distance;
-      closestCity = city;
-    }
-  }
-  
-  // If we found a reasonably close city (within ~5 degrees), use its timezone
-  if (closestCity && minDistance < 5) {
-    return closestCity.timezone;
-  }
-  
-  // Otherwise, construct a generic UTC offset timezone
-  if (hourOffset >= 0) {
-    return `Etc/GMT-${hourOffset}`;
-  } else {
-    return `Etc/GMT+${Math.abs(hourOffset)}`;
-  }
 }
 
 export function getCurrentTimeInTimezone(timezone: string): string {

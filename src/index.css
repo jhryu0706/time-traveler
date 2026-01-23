@@ -287,28 +287,6 @@
   }
 }
 
-/* Leaflet customizations - mobile optimized */
-.leaflet-container {
-  @apply rounded-xl;
-  font-family: 'Inter', system-ui, sans-serif;
-  touch-action: pan-x pan-y;
-}
-
-.leaflet-control-zoom {
-  @apply border-border shadow-md;
-}
-
-.leaflet-control-zoom a {
-  @apply bg-card text-foreground border-border;
-  width: 44px !important;
-  height: 44px !important;
-  line-height: 44px !important;
-  font-size: 20px !important;
-}
-
-.leaflet-control-zoom a:active {
-  @apply bg-secondary;
-}
 
 /* Mobile scrollbar hide */
 .hide-scrollbar {

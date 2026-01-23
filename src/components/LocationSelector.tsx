@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, MapPin, ChevronDown, X } from 'lucide-react';
-import { cities, countries, City } from '@/data/cities';
+import { cities, City } from '@/data/cities';
 import { getCurrentTimeInTimezone } from '@/utils/timezone';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import InteractiveMap from './InteractiveMap';
 import TimezoneSelector from './TimezoneSelector';
 
 interface LocationSelectorProps {
@@ -27,9 +25,6 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
   };
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [showCountryFallback, setShowCountryFallback] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState<typeof countries[0] | null>(null);
-  const [showMap, setShowMap] = useState(false);
   const [showTimezoneSelector, setShowTimezoneSelector] = useState(false);
   const [multipleTimezones, setMultipleTimezones] = useState<string[]>([]);
   const [pendingCity, setPendingCity] = useState<City | null>(null);
@@ -44,19 +39,10 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
     .sort((a, b) => a.name.localeCompare(b.name))
     .slice(0, 50);
 
-  const filteredCountries = countries
-    .filter(country =>
-      country.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
-
-  const showNoResults = searchQuery.length >= 2 && filteredCities.length === 0;
-
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
-        setShowCountryFallback(false);
       }
     }
 
@@ -94,38 +80,6 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
     setShowTimezoneSelector(false);
     setPendingCity(null);
     setMultipleTimezones([]);
-  };
-
-  const handleCountrySelect = (country: typeof countries[0]) => {
-    setSelectedCountry(country);
-    setShowCountryFallback(false);
-    setShowMap(true);
-    setIsOpen(false);
-  };
-
-  const handleMapSelect = (lat: number, lng: number, timezone: string) => {
-    onChange({
-      name: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
-      timezone,
-      lat,
-      lng,
-    });
-    setShowMap(false);
-    setSelectedCountry(null);
-  };
-
-  const handleOpenMapFromTimezone = () => {
-    setShowTimezoneSelector(false);
-    if (pendingCity) {
-      setSelectedCountry({
-        name: pendingCity.country,
-        code: '',
-        lat: pendingCity.lat,
-        lng: pendingCity.lng,
-        zoom: 8,
-      });
-    }
-    setShowMap(true);
   };
 
   const clearSelection = () => {
@@ -174,81 +128,32 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
             </div>
           </div>
           
-          {!showCountryFallback ? (
-            <>
-              <div className="overflow-y-auto flex-1 hide-scrollbar">
-                {filteredCities.map((city, index) => (
-                  <button
-                    key={`${city.name}-${city.country}-${index}`}
-                    onClick={() => handleCitySelect(city)}
-                    className="w-full px-4 py-4 text-left transition-colors flex items-center justify-between touch-active active:bg-hover hover:bg-hover"
-                  >
-                    <div className="flex items-center gap-3">
-                      <MapPin className="w-5 h-5 text-muted-foreground" />
-                      <div>
-                        <div className="text-foreground font-medium text-base">{city.name}</div>
-                        <div className="text-sm text-muted-foreground">{city.country}</div>
-                      </div>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {getCurrentTimeInTimezone(city.timezone)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              
-              {showNoResults && (
-                <div className="p-4 border-t border-border">
-                  <p className="text-sm text-muted-foreground mb-3">City not found?</p>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowCountryFallback(true);
-                      setSearchQuery('');
-                    }}
-                    className="w-full h-12 text-base touch-active"
-                  >
-                    Select country instead
-                  </Button>
+          <div className="overflow-y-auto flex-1 hide-scrollbar">
+            {filteredCities.map((city, index) => (
+              <button
+                key={`${city.name}-${city.country}-${index}`}
+                onClick={() => handleCitySelect(city)}
+                className="w-full px-4 py-4 text-left transition-colors flex items-center justify-between touch-active active:bg-hover hover:bg-hover"
+              >
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-5 h-5 text-muted-foreground" />
+                  <div>
+                    <div className="text-foreground font-medium text-base">{city.name}</div>
+                    <div className="text-sm text-muted-foreground">{city.country}</div>
+                  </div>
                 </div>
-              )}
-            </>
-          ) : (
-            <div className="overflow-y-auto flex-1">
-              <div className="px-4 py-3 border-b border-border sticky top-0 bg-popover">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search countries..."
-                  className="w-full px-4 py-3 bg-secondary/50 border border-border rounded-xl text-base outline-none focus:ring-2 focus:ring-primary/30"
-                  autoFocus
-                />
+                <span className="text-sm text-muted-foreground">
+                  {getCurrentTimeInTimezone(city.timezone)}
+                </span>
+              </button>
+            ))}
+            {filteredCities.length === 0 && searchQuery.length >= 2 && (
+              <div className="p-4 text-center text-muted-foreground">
+                No cities found
               </div>
-              {filteredCountries.map((country) => (
-                <button
-                  key={country.code}
-                  onClick={() => handleCountrySelect(country)}
-                  className="w-full px-4 py-4 text-left transition-colors flex items-center gap-3 touch-active active:bg-hover hover:bg-hover"
-                >
-                  <span className="text-foreground text-base">{country.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
+            )}
+          </div>
         </div>
-
-        {/* Map Modal */}
-        {showMap && selectedCountry && (
-          <InteractiveMap
-            country={selectedCountry}
-            onSelect={handleMapSelect}
-            onClose={() => {
-              setShowMap(false);
-              setSelectedCountry(null);
-            }}
-          />
-        )}
 
         {/* Timezone Selector Modal */}
         {showTimezoneSelector && (
@@ -256,7 +161,6 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
             timezones={multipleTimezones}
             cityName={pendingCity?.name || ''}
             onSelect={handleTimezoneSelect}
-            onSelectMap={handleOpenMapFromTimezone}
             onClose={() => {
               setShowTimezoneSelector(false);
               setPendingCity(null);
@@ -335,81 +239,32 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
             </button>
           </div>
 
-          {!showCountryFallback ? (
-            <>
-              <div className="overflow-y-auto max-h-[60vh] md:max-h-72 hide-scrollbar">
-                {filteredCities.map((city, index) => (
-                  <button
-                    key={`${city.name}-${city.country}-${index}`}
-                    onClick={() => handleCitySelect(city)}
-                    className="w-full px-4 py-4 text-left transition-colors flex items-center justify-between touch-active active:bg-hover hover:bg-hover"
-                  >
-                    <div className="flex items-center gap-3">
-                      <MapPin className="w-5 h-5 text-muted-foreground" />
-                      <div>
-                        <div className="text-foreground font-medium text-base">{city.name}</div>
-                        <div className="text-sm text-muted-foreground">{city.country}</div>
-                      </div>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {getCurrentTimeInTimezone(city.timezone)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              
-              {showNoResults && (
-                <div className="p-4 border-t border-border">
-                  <p className="text-sm text-muted-foreground mb-3">City not found?</p>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowCountryFallback(true);
-                      setSearchQuery('');
-                    }}
-                    className="w-full h-12 text-base touch-active"
-                  >
-                    Select country instead
-                  </Button>
+          <div className="overflow-y-auto max-h-[60vh] md:max-h-72 hide-scrollbar">
+            {filteredCities.map((city, index) => (
+              <button
+                key={`${city.name}-${city.country}-${index}`}
+                onClick={() => handleCitySelect(city)}
+                className="w-full px-4 py-4 text-left transition-colors flex items-center justify-between touch-active active:bg-hover hover:bg-hover"
+              >
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-5 h-5 text-muted-foreground" />
+                  <div>
+                    <div className="text-foreground font-medium text-base">{city.name}</div>
+                    <div className="text-sm text-muted-foreground">{city.country}</div>
+                  </div>
                 </div>
-              )}
-            </>
-          ) : (
-            <div className="overflow-y-auto max-h-[60vh] md:max-h-72">
-              <div className="px-4 py-3 border-b border-border sticky top-0 bg-popover">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search countries..."
-                  className="w-full px-4 py-3 bg-secondary/50 border border-border rounded-xl text-base outline-none focus:ring-2 focus:ring-primary/30"
-                  autoFocus
-                />
+                <span className="text-sm text-muted-foreground">
+                  {getCurrentTimeInTimezone(city.timezone)}
+                </span>
+              </button>
+            ))}
+            {filteredCities.length === 0 && searchQuery.length >= 2 && (
+              <div className="p-4 text-center text-muted-foreground">
+                No cities found
               </div>
-              {filteredCountries.map((country) => (
-                <button
-                  key={country.code}
-                  onClick={() => handleCountrySelect(country)}
-                  className="w-full px-4 py-4 text-left transition-colors flex items-center gap-3 touch-active active:bg-hover hover:bg-hover"
-                >
-                  <span className="text-foreground text-base">{country.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      )}
-
-      {/* Map Modal */}
-      {showMap && selectedCountry && (
-        <InteractiveMap
-          country={selectedCountry}
-          onSelect={handleMapSelect}
-          onClose={() => {
-            setShowMap(false);
-            setSelectedCountry(null);
-          }}
-        />
       )}
 
       {/* Timezone Selector Modal */}
@@ -418,7 +273,6 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
           timezones={multipleTimezones}
           cityName={pendingCity?.name || ''}
           onSelect={handleTimezoneSelect}
-          onSelectMap={handleOpenMapFromTimezone}
           onClose={() => {
             setShowTimezoneSelector(false);
             setPendingCity(null);
