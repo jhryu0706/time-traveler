@@ -1,13 +1,11 @@
 import React from 'react';
-import { Clock, MapPin, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Clock, X } from 'lucide-react';
 import { getCurrentTimeInTimezone } from '@/utils/timezone';
 
 interface TimezoneSelectorProps {
   timezones: string[];
   cityName: string;
   onSelect: (timezone: string) => void;
-  onSelectMap: () => void;
   onClose: () => void;
 }
 
@@ -15,7 +13,6 @@ export default function TimezoneSelector({
   timezones,
   cityName,
   onSelect,
-  onSelectMap,
   onClose,
 }: TimezoneSelectorProps) {
   return (
@@ -63,18 +60,6 @@ export default function TimezoneSelector({
           </div>
         </div>
       </div>
-
-      {/* Footer - Sticky bottom */}
-      <footer className="px-4 py-4 border-t border-border bg-card safe-bottom">
-        <Button
-          variant="outline"
-          onClick={onSelectMap}
-          className="w-full h-12 text-base gap-2 touch-active"
-        >
-          <MapPin className="w-5 h-5" />
-          Select location on map
-        </Button>
-      </footer>
     </div>
   );
 }
