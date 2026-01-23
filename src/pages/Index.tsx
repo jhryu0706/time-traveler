@@ -150,35 +150,8 @@ const Index = () => {
 
   return (
     <div className="h-screen bg-background text-foreground flex flex-col dark">
-      {isOnboarding && (
-        /* Onboarding - Full screen welcome */
-        <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
-          <h1 
-            className="text-[28px] text-foreground mb-4 font-medium tracking-tight"
-            style={{ fontFamily: "'Inter Tight', sans-serif" }}
-          >
-            Time Converter
-          </h1>
-          <p 
-            className="text-[17px] text-muted-foreground mb-12 leading-relaxed max-w-[280px]"
-            style={{ fontFamily: "'Inter Tight', sans-serif" }}
-          >
-            Let's get started by adding your first location
-          </p>
-          <button 
-            onClick={() => setLocationSelectorOpen(true)}
-            className="bg-foreground text-background px-10 py-4 rounded-full text-[17px] font-semibold btn-press btn-shimmer shadow-xl"
-            style={{ fontFamily: "'Inter Tight', sans-serif" }}
-          >
-            Add first location
-          </button>
-        </div>
-      )}
-
-      {!isOnboarding && (
-        <>
-          {/* Header */}
-          <div className="px-6 pt-14 pb-6">
+      {/* Header */}
+      <div className="px-6 pt-14 pb-6">
             {/* Edit Location/Time Menu - top right */}
             {sourceLocation && isDateTimeValid && (
               <div className="flex justify-end mb-2">
@@ -354,7 +327,32 @@ const Index = () => {
 
       {/* Cities List */}
       <div className="flex-1 overflow-y-auto bg-background pt-3 pb-6">
-        {targetLocations.length === 0 && !showAddCity && (
+        {/* Onboarding - show when no source location */}
+        {isOnboarding && (
+          <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+            <h1 
+              className="text-[28px] text-foreground mb-4 font-medium tracking-tight"
+              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            >
+              Time Converter
+            </h1>
+            <p 
+              className="text-[17px] text-muted-foreground mb-12 leading-relaxed max-w-[280px]"
+              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            >
+              Let's get started by adding your first location
+            </p>
+            <button 
+              onClick={() => setLocationSelectorOpen(true)}
+              className="bg-foreground text-background px-10 py-4 rounded-full text-[17px] font-semibold btn-press btn-shimmer shadow-xl"
+              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            >
+              Add first location
+            </button>
+          </div>
+        )}
+
+        {!isOnboarding && targetLocations.length === 0 && !showAddCity && (
           <div className="px-6 py-8 text-center text-muted-foreground">
             <p className="text-[15px]">No cities added yet</p>
           </div>
@@ -422,8 +420,6 @@ const Index = () => {
           );
         })}
       </div>
-        </>
-      )}
     </div>
   );
 };
