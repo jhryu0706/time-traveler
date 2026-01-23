@@ -288,7 +288,7 @@ const Index = () => {
         onOpenChange={setTimeSelectorOpen}
       />
 
-      {/* Add/Remove Buttons with Title */}
+      {/* Add/Remove Buttons */}
       <div className="px-6 py-3 bg-background flex justify-between items-center">
         <button 
           className="text-primary text-[17px] font-bold flex items-center gap-2"
@@ -309,8 +309,6 @@ const Index = () => {
             </>
           )}
         </button>
-        
-        <span className="text-[17px] text-foreground font-bold">Time Converter</span>
         
         <button 
           className="text-primary text-[17px] font-bold flex items-center gap-2"
