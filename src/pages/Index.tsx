@@ -155,7 +155,7 @@ const Index = () => {
           <div className="flex justify-end mb-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="bg-popover text-muted-foreground flex items-center gap-1.5 text-[15px]">
+                <button className="text-muted-foreground flex items-center gap-1.5 text-[15px]">
                   <Menu className="w-5 h-5" />
                   <span>Edit Location/Time</span>
                 </button>
