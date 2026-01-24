@@ -166,17 +166,17 @@ const Index = () => {
                       <span>Edit Location/Time</span>
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-card border-border">
+                  <DropdownMenuContent align="end" className="bg-popover border-border animate-in fade-in-0 zoom-in-95 duration-200">
                     <DropdownMenuItem 
                       onClick={() => setLocationSelectorOpen(true)}
-                      className="flex items-center gap-2 cursor-pointer"
+                      className="flex items-center gap-2 cursor-pointer focus:bg-hover hover:bg-hover focus:text-foreground"
                     >
                       <MapPin className="w-4 h-4" />
                       <span>Edit location</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       onClick={() => setTimeSelectorOpen(true)}
-                      className="flex items-center gap-2 cursor-pointer"
+                      className="flex items-center gap-2 cursor-pointer focus:bg-hover hover:bg-hover focus:text-foreground"
                     >
                       <Clock className="w-4 h-4" />
                       <span>Edit time</span>
