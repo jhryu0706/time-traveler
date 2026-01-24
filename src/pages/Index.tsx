@@ -43,41 +43,29 @@ const Index = () => {
     if (hasRequestedLocation) return;
     setHasRequestedLocation(true);
     
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          // Get timezone from coordinates
-          const { latitude, longitude } = position.coords;
-          const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-          // Extract city name from timezone (e.g., "America/New_York" -> "New York")
-          const cityFromTimezone = userTimezone.split('/').pop()?.replace(/_/g, ' ') || 'Local';
-          setSourceLocation({
-            name: cityFromTimezone,
-            timezone: userTimezone,
-            lat: latitude,
-            lng: longitude,
-          });
-          // Auto-set to local time when geolocation succeeds
-          const now = new Date();
-          const month = String(now.getMonth() + 1).padStart(2, '0');
-          const day = String(now.getDate()).padStart(2, '0');
-          const year = now.getFullYear();
-          let hours = now.getHours();
-          const minutes = now.getMinutes();
-          const period = hours >= 12 ? 'PM' : 'AM';
-          hours = hours % 12 || 12;
-          setDateTime(`${month}/${day}/${year} ${hours}:${String(minutes).padStart(2, '0')} ${period}`);
-        },
-        (error) => {
-          console.log('Geolocation denied or unavailable:', error.message);
-          setLocationPermissionDenied(true);
-        },
-        { timeout: 10000 }
-      );
-    } else {
-      setLocationPermissionDenied(true);
-    }
+    // Get browser timezone without geolocation
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const cityFromTimezone = 'Local';
+    
+    setSourceLocation({
+      name: cityFromTimezone,
+      timezone: userTimezone,
+      lat: 0, // placeholder coords since we're not using geolocation
+      lng: 0,
+    });
+    
+    // Set to current local time
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const year = now.getFullYear();
+    let hours = now.getHours();
+    const minutes = now.getMinutes();
+    const period = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    setDateTime(`${month}/${day}/${year} ${hours}:${String(minutes).padStart(2, '0')} ${period}`);
   }, [hasRequestedLocation]);
+
 
   // Update current time every second
   useEffect(() => {
@@ -155,7 +143,7 @@ const Index = () => {
   const time12 = formatTime12Hour(currentTime);
 
   // Check if we're in onboarding state (no source location selected yet)
-  const isOnboarding = locationPermissionDenied && !sourceLocation;
+  const missingDateorLoc = !dateTime || !sourceLocation;
 
   return (
     <div className="h-screen bg-background text-foreground flex flex-col dark">
@@ -167,16 +155,13 @@ const Index = () => {
         >
           Time Converter
         </h1>
-      </div>
-
-      {/* Header */}
-      <div className="px-6 pb-6">
-            {/* Edit Location/Time Menu - top right */}
-            {sourceLocation && isDateTimeValid && (
+                    {/* Edit Location/Time Menu - top right */}
+            {/* Onboarding - show when location permission denied */}
+            {isDateTimeValid && (
               <div className="flex justify-end mb-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="text-primary flex items-center gap-1.5 text-[15px]">
+                    <button className="text-muted-foreground flex items-center gap-1.5 text-[15px]">
                       <Menu className="w-5 h-5" />
                       <span>Edit Location/Time</span>
                     </button>
@@ -200,14 +185,18 @@ const Index = () => {
                 </DropdownMenu>
               </div>
             )}
+      </div>
 
+      {/* Header */}
+      <div className="px-6 pb-6">
             {/* Secondary header */}
             <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
               <span>{formatDate(currentTime)}</span>
-              <span className="text-foreground">Source time and location</span>
+              <span className="text-muted-foreground">Source time</span>
             </div>
 
             {/* Main content - Time and Location */}
+            {!missingDateorLoc ?
             <div className="flex justify-between items-baseline mb-4">
               <span className="text-[32px] text-primary">
                 {sourceLocation ? sourceLocation.name.split(',')[0] : 'Local'}
@@ -234,7 +223,19 @@ const Index = () => {
                 )}
               </div>
             </div>
+            
+          :
+          <div className="flex flex-col items-center justify-center py-16 px-8">
+            <button 
+              onClick={() => setLocationSelectorOpen(true)}
+              className="bg-white/10 backdrop-blur-sm text-muted-foreground px-8 py-4 rounded-2xl text-[17px] font-medium btn-press border border-white/5"
+              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            >
+              Add first location
+            </button>
           </div>
+          }
+        </div>
 
       {/* Time Choice Dialog - forces user to select */}
       <Dialog open={showTimeChoiceDialog} onOpenChange={setShowTimeChoiceDialog}>
@@ -344,20 +345,8 @@ const Index = () => {
 
       {/* Cities List */}
       <div className="flex-1 overflow-y-auto bg-background pt-3 pb-6">
-        {/* Onboarding - show when location permission denied */}
-        {isOnboarding && (
-          <div className="flex flex-col items-center justify-center py-16 px-8">
-            <button 
-              onClick={() => setLocationSelectorOpen(true)}
-              className="bg-white/10 backdrop-blur-sm text-muted-foreground px-8 py-4 rounded-2xl text-[17px] font-medium btn-press border border-white/5"
-              style={{ fontFamily: "'Inter Tight', sans-serif" }}
-            >
-              Add first location
-            </button>
-          </div>
-        )}
 
-        {!isOnboarding && targetLocations.length === 0 && !showAddCity && (
+        {targetLocations.length === 0 && !showAddCity && (
           <div className="px-6 py-8 text-center text-muted-foreground">
             <p className="text-[15px]">No cities added yet</p>
           </div>
