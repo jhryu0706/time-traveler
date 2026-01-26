@@ -37,14 +37,20 @@ export default function LocationSelector({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const filteredCities = cities
-    .filter(
-      (city) =>
-        city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        city.country.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .slice(0, 50);
+  const filteredCities = React.useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) {
+      return cities.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 50);
+    }
+    return cities
+      .filter(
+        (city) =>
+          city.name.toLowerCase().includes(query) ||
+          city.country.toLowerCase().includes(query),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .slice(0, 50);
+  }, [searchQuery]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -103,16 +109,9 @@ export default function LocationSelector({
         {/* Backdrop */}
         <div className="fixed inset-0 bg-black/50 z-40 animate-fade-in" onClick={() => setIsOpen(false)} />
 
-        {/* Bottom Sheet */}
-        <div className="fixed inset-x-0 bottom-0 popup-container border-t rounded-t-2xl z-50 animate-slide-up max-h-[80vh] flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <button onClick={() => setIsOpen(false)} className="p-2 -mr-2 touch-active">
-              <X className="w-5 h-5 text-muted-foreground" />
-            </button>
-          </div>
-
-          {/* Search */}
+        {/* Bottom Sheet - Fixed 60% height */}
+        <div className="fixed inset-x-0 bottom-0 popup-container border-t rounded-t-2xl z-50 animate-slide-up h-[60vh] flex flex-col">
+          {/* Search Header with X button */}
           <div className="px-4 py-3 border-b border-border">
             <div className="flex items-center gap-3 px-4 py-3 bg-secondary/50 border border-border rounded-xl">
               <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
@@ -121,10 +120,13 @@ export default function LocationSelector({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search cities..."
+                placeholder="Search cities or countries..."
                 className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-base"
                 autoFocus
               />
+              <button onClick={() => setIsOpen(false)} className="p-1 touch-active">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
             </div>
           </div>
 
@@ -145,7 +147,7 @@ export default function LocationSelector({
                 <span className="text-sm text-muted-foreground">{getCurrentTimeInTimezone(city.timezone)}</span>
               </button>
             ))}
-            {filteredCities.length === 0 && searchQuery.length >= 2 && (
+            {filteredCities.length === 0 && searchQuery.length > 0 && (
               <div className="p-4 text-center text-muted-foreground">No cities found</div>
             )}
           </div>
