@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, MapPin, ChevronDown, X } from 'lucide-react';
-import { cities, City } from '@/data/cities';
-import { getCurrentTimeInTimezone } from '@/utils/timezone';
-import { cn } from '@/lib/utils';
-import TimezoneSelector from './TimezoneSelector';
+import React, { useState, useRef, useEffect } from "react";
+import { Search, MapPin, ChevronDown, X } from "lucide-react";
+import { cities, City } from "@/data/cities";
+import { getCurrentTimeInTimezone } from "@/utils/timezone";
+import { cn } from "@/lib/utils";
+import TimezoneSelector from "./TimezoneSelector";
 
 interface LocationSelectorProps {
   label: string;
@@ -13,7 +13,13 @@ interface LocationSelectorProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-export default function LocationSelector({ label, value, onChange, isOpen: externalOpen, onOpenChange }: LocationSelectorProps) {
+export default function LocationSelector({
+  label,
+  value,
+  onChange,
+  isOpen: externalOpen,
+  onOpenChange,
+}: LocationSelectorProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = externalOpen ?? internalOpen;
   const setIsOpen = (open: boolean) => {
@@ -23,8 +29,8 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
       setInternalOpen(open);
     }
   };
-  
-  const [searchQuery, setSearchQuery] = useState('');
+
+  const [searchQuery, setSearchQuery] = useState("");
   const [showTimezoneSelector, setShowTimezoneSelector] = useState(false);
   const [multipleTimezones, setMultipleTimezones] = useState<string[]>([]);
   const [pendingCity, setPendingCity] = useState<City | null>(null);
@@ -32,9 +38,10 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
   const inputRef = useRef<HTMLInputElement>(null);
 
   const filteredCities = cities
-    .filter(city =>
-      city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      city.country.toLowerCase().includes(searchQuery.toLowerCase())
+    .filter(
+      (city) =>
+        city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        city.country.toLowerCase().includes(searchQuery.toLowerCase()),
     )
     .sort((a, b) => a.name.localeCompare(b.name))
     .slice(0, 50);
@@ -46,8 +53,8 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleCitySelect = (city: City) => {
@@ -64,7 +71,7 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
         lng: city.lng,
       });
       setIsOpen(false);
-      setSearchQuery('');
+      setSearchQuery("");
     }
   };
 
@@ -84,34 +91,27 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
 
   const clearSelection = () => {
     onChange(null);
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
   // If controlled externally, render as bottom sheet only
   if (onOpenChange !== undefined) {
     if (!isOpen) return null;
-    
+
     return (
       <>
         {/* Backdrop */}
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 animate-fade-in"
-          onClick={() => setIsOpen(false)}
-        />
-        
+        <div className="fixed inset-0 bg-black/50 z-40 animate-fade-in" onClick={() => setIsOpen(false)} />
+
         {/* Bottom Sheet */}
         <div className="fixed inset-x-0 bottom-0 popup-container border-t rounded-t-2xl z-50 animate-slide-up max-h-[80vh] flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <span className="font-medium text-foreground">{label}</span>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="p-2 -mr-2 touch-active"
-            >
+            <button onClick={() => setIsOpen(false)} className="p-2 -mr-2 touch-active">
               <X className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
-          
+
           {/* Search */}
           <div className="px-4 py-3 border-b border-border">
             <div className="flex items-center gap-3 px-4 py-3 bg-secondary/50 border border-border rounded-xl">
@@ -127,7 +127,7 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
               />
             </div>
           </div>
-          
+
           <div className="overflow-y-auto flex-1 hide-scrollbar">
             {filteredCities.map((city, index) => (
               <button
@@ -142,15 +142,11 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
                     <div className="text-sm text-muted-foreground">{city.country}</div>
                   </div>
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {getCurrentTimeInTimezone(city.timezone)}
-                </span>
+                <span className="text-sm text-muted-foreground">{getCurrentTimeInTimezone(city.timezone)}</span>
               </button>
             ))}
             {filteredCities.length === 0 && searchQuery.length >= 2 && (
-              <div className="p-4 text-center text-muted-foreground">
-                No cities found
-              </div>
+              <div className="p-4 text-center text-muted-foreground">No cities found</div>
             )}
           </div>
         </div>
@@ -159,7 +155,7 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
         {showTimezoneSelector && (
           <TimezoneSelector
             timezones={multipleTimezones}
-            cityName={pendingCity?.name || ''}
+            cityName={pendingCity?.name || ""}
             onSelect={handleTimezoneSelect}
             onClose={() => {
               setShowTimezoneSelector(false);
@@ -180,7 +176,7 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
         type="button"
         className={cn(
           "w-full relative flex items-center gap-3 px-4 py-3.5 min-h-[52px] bg-secondary/50 border border-border rounded-xl cursor-pointer transition-all duration-200 touch-active text-left",
-          isOpen && "ring-2 ring-primary/30 border-primary/30"
+          isOpen && "ring-2 ring-primary/30 border-primary/30",
         )}
         onClick={() => {
           setIsOpen(true);
@@ -188,7 +184,7 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
         }}
       >
         <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-        
+
         {value && !isOpen ? (
           <div className="flex-1 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
@@ -217,10 +213,9 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
               className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-base"
               onClick={(e) => e.stopPropagation()}
             />
-            <ChevronDown className={cn(
-              "w-5 h-5 text-muted-foreground transition-transform duration-200",
-              isOpen && "rotate-180"
-            )} />
+            <ChevronDown
+              className={cn("w-5 h-5 text-muted-foreground transition-transform duration-200", isOpen && "rotate-180")}
+            />
           </>
         )}
       </button>
@@ -231,10 +226,7 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
           {/* Mobile Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border md:hidden">
             <span className="font-medium text-foreground">Select Location</span>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="p-2 -mr-2 touch-active"
-            >
+            <button onClick={() => setIsOpen(false)} className="p-2 -mr-2 touch-active">
               <X className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
@@ -253,15 +245,11 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
                     <div className="text-sm text-muted-foreground">{city.country}</div>
                   </div>
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {getCurrentTimeInTimezone(city.timezone)}
-                </span>
+                <span className="text-sm text-muted-foreground">{getCurrentTimeInTimezone(city.timezone)}</span>
               </button>
             ))}
             {filteredCities.length === 0 && searchQuery.length >= 2 && (
-              <div className="p-4 text-center text-muted-foreground">
-                No cities found
-              </div>
+              <div className="p-4 text-center text-muted-foreground">No cities found</div>
             )}
           </div>
         </div>
@@ -271,7 +259,7 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
       {showTimezoneSelector && (
         <TimezoneSelector
           timezones={multipleTimezones}
-          cityName={pendingCity?.name || ''}
+          cityName={pendingCity?.name || ""}
           onSelect={handleTimezoneSelect}
           onClose={() => {
             setShowTimezoneSelector(false);
