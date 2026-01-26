@@ -231,6 +231,58 @@ const Index = () => {
         )}
       </div>
 
+      {/* Time Choice Dialog - forces user to select */}
+      <Dialog open={showTimeChoiceDialog} onOpenChange={setShowTimeChoiceDialog}>
+        <DialogContent className="bg-card border-border max-w-[300px]">
+          <DialogHeader>
+            <DialogTitle className="text-center text-foreground">Select Time</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 pt-2">
+            <button
+              onClick={handleSetLocalTime}
+              className="w-full px-4 py-3 bg-background rounded-lg text-[15px] text-foreground border border-border flex items-center justify-center gap-2 hover:bg-hover transition-colors"
+            >
+              <Clock className="w-4 h-4" />
+              <span>Set to local time</span>
+            </button>
+            <button
+              onClick={handleSelectTime}
+              className="w-full px-4 py-3 bg-background rounded-lg text-[15px] text-foreground border border-border flex items-center justify-center gap-2 hover:bg-hover transition-colors"
+            >
+              <Clock className="w-4 h-4" />
+              <span>Select time</span>
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Location Selector Sheet */}
+      <LocationSelector
+        label="Source Location"
+        value={sourceLocation}
+        onChange={(loc) => {
+          setSourceLocation(loc);
+          if (loc) {
+            setLocationSelectorOpen(false);
+            // Show time choice dialog after manual location selection
+            if (!isDateTimeValid) {
+              setShowTimeChoiceDialog(true);
+            }
+          }
+        }}
+        isOpen={locationSelectorOpen}
+        onOpenChange={setLocationSelectorOpen}
+      />
+
+      {/* Time Selector Sheet */}
+      <DateTimeInput
+        value={dateTime}
+        onChange={setDateTime}
+        isValid={isDateTimeValid || dateTime.length === 0}
+        isOpen={timeSelectorOpen}
+        onOpenChange={setTimeSelectorOpen}
+      />
+
       {/* Add/Remove Buttons */}
       <div className="px-6 py-3 bg-background flex justify-between items-center">
         <button
@@ -315,7 +367,7 @@ const Index = () => {
               key={location.name}
               className="mx-4 mb-3 city-card p-4 animate-fade-in"
               style={{
-                background: `linear-gradient(135deg, hsl(0 0% 8%) 0%, hsl(0 0% 8%) 100%)`
+                background: `linear-gradient(135deg, hsl(0 0% 8%) 0%, hsl(0 0% 8%) 100%)`,
               }}
             >
               {/* Secondary header */}
