@@ -201,7 +201,7 @@ const Index = () => {
             <div className="flex items-baseline gap-2">
               {isDateTimeValid ? (
                 <>
-                  <span className="text-[32px] leading-none font-light tabular-nums text-primary">
+                  <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
                     {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[0] || time12.hours + ":" + time12.minutes}
                   </span>
                   <span className="text-[13px] text-muted-foreground">
