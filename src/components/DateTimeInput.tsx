@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, forwardRef, useCallback } from 'rea
 import { Calendar as CalendarIcon, Clock, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 
 interface DateTimeInputProps {
@@ -13,45 +12,52 @@ interface DateTimeInputProps {
   onOpenChange?: (open: boolean) => void;
 }
 
+const months = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+const days = Array.from({ length: 31 }, (_, i) => i + 1);
+const currentYear = new Date().getFullYear();
+const years = Array.from({ length: 20 }, (_, i) => currentYear - 5 + i);
 const hours = Array.from({ length: 12 }, (_, i) => i + 1);
 const minutes = Array.from({ length: 60 }, (_, i) => i);
 const periods = ['AM', 'PM'];
 
 const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
   function DateTimeInput({ value, onChange, isValid, isOpen: externalOpen, onOpenChange }, ref) {
-    // Initialize blank - no default date/time
-    const [date, setDate] = useState<Date | undefined>(undefined);
+    const [month, setMonth] = useState(new Date().getMonth());
+    const [day, setDay] = useState(new Date().getDate());
+    const [year, setYear] = useState(currentYear);
     const [hour, setHour] = useState(12);
     const [minute, setMinute] = useState(0);
     const [period, setPeriod] = useState<'AM' | 'PM'>('AM');
-    const [dateOpen, setDateOpen] = useState(false);
-    const [timeOpen, setTimeOpen] = useState(false);
+    const [step, setStep] = useState<'date' | 'time'>('date');
     
-    // Sync with external open state - open date picker when sheet opens
-    useEffect(() => {
-      if (externalOpen && !date) {
-        setDateOpen(true);
-      }
-    }, [externalOpen, date]);
-    
+    const monthRef = useRef<HTMLDivElement>(null);
+    const dayRef = useRef<HTMLDivElement>(null);
+    const yearRef = useRef<HTMLDivElement>(null);
     const hourRef = useRef<HTMLDivElement>(null);
     const minuteRef = useRef<HTMLDivElement>(null);
     const periodRef = useRef<HTMLDivElement>(null);
     
-    const scrollTimeoutRef = useRef<{ hour?: number; minute?: number; period?: number }>({});
+    const scrollTimeoutRef = useRef<{ [key: string]: number }>({});
 
     // Update parent value when any component changes
     useEffect(() => {
-      if (date) {
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const year = date.getFullYear();
-        const hourStr = String(hour);
-        const minuteStr = String(minute).padStart(2, '0');
-        const formatted = `${month}/${day}/${year} ${hourStr}:${minuteStr} ${period}`;
-        onChange(formatted);
+      const monthStr = String(month + 1).padStart(2, '0');
+      const dayStr = String(day).padStart(2, '0');
+      const hourStr = String(hour);
+      const minuteStr = String(minute).padStart(2, '0');
+      const formatted = `${monthStr}/${dayStr}/${year} ${hourStr}:${minuteStr} ${period}`;
+      onChange(formatted);
+    }, [month, day, year, hour, minute, period, onChange]);
+
+    // Reset step when sheet opens
+    useEffect(() => {
+      if (externalOpen) {
+        setStep('date');
       }
-    }, [date, hour, minute, period, onChange]);
+    }, [externalOpen]);
 
     // Scroll to selected value in picker
     const scrollToSelected = (scrollRef: React.RefObject<HTMLDivElement>, index: number) => {
@@ -67,9 +73,9 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
     // Handle scroll end and snap to closest value
     const handleScrollEnd = useCallback((
       scrollRef: React.RefObject<HTMLDivElement>,
-      items: number[] | string[],
+      items: (number | string)[],
       setValue: (val: any) => void,
-      timeoutKey: 'hour' | 'minute' | 'period'
+      timeoutKey: string
     ) => {
       if (scrollTimeoutRef.current[timeoutKey]) {
         clearTimeout(scrollTimeoutRef.current[timeoutKey]);
@@ -82,40 +88,39 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           const closestIndex = Math.round(scrollTop / itemHeight);
           const clampedIndex = Math.max(0, Math.min(closestIndex, items.length - 1));
           
-          // Snap to the closest item
           scrollRef.current.scrollTo({
             top: clampedIndex * itemHeight,
             behavior: 'smooth'
           });
           
-          // Set the value
           setValue(items[clampedIndex]);
         }
       }, 100);
     }, []);
 
+    // Scroll to initial positions when step changes
     useEffect(() => {
-      if (timeOpen) {
+      if (step === 'date') {
+        setTimeout(() => {
+          scrollToSelected(monthRef, month);
+          scrollToSelected(dayRef, day - 1);
+          scrollToSelected(yearRef, years.indexOf(year));
+        }, 100);
+      } else if (step === 'time') {
         setTimeout(() => {
           scrollToSelected(hourRef, hour - 1);
           scrollToSelected(minuteRef, minute);
           scrollToSelected(periodRef, period === 'AM' ? 0 : 1);
         }, 100);
       }
-    }, [timeOpen, hour, minute, period]);
+    }, [step, month, day, year, hour, minute, period]);
 
-    const handleDateSelect = (selectedDate: Date | undefined) => {
-      setDate(selectedDate);
-      if (selectedDate) {
-        setDateOpen(false);
-        setTimeout(() => setTimeOpen(true), 150);
-      }
+    const getDayOfWeek = () => {
+      const date = new Date(year, month, day);
+      return format(date, 'EEE');
     };
 
-    // Format: 12/31/2025 (Wed) at 8:00 PM
-    const displayValue = date 
-      ? `${format(date, 'MM/dd/yyyy')} (${format(date, 'EEE')}) at ${hour}:${String(minute).padStart(2, '0')} ${period}`
-      : '';
+    const displayValue = `${String(month + 1).padStart(2, '0')}/${String(day).padStart(2, '0')}/${year} (${getDayOfWeek()}) at ${hour}:${String(minute).padStart(2, '0')} ${period}`;
 
     const closeSheet = () => {
       if (onOpenChange) {
@@ -139,7 +144,9 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           <div className="fixed inset-x-0 bottom-0 bg-popover border-t border-border rounded-t-2xl z-50 animate-slide-up max-h-[80vh] flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <span className="font-medium text-foreground">Select Date & Time</span>
+              <span className="font-medium text-foreground">
+                {step === 'date' ? 'Select Date' : 'Select Time'}
+              </span>
               <button
                 onClick={closeSheet}
                 className="p-2 -mr-2 touch-active"
@@ -149,25 +156,98 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
             </div>
             
             <div className="p-4 overflow-y-auto">
-              {/* Calendar */}
-              {!date ? (
-                <div className="flex justify-center">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={handleDateSelect}
-                    className="p-3 pointer-events-auto"
-                  />
-                </div>
-              ) : !timeOpen ? (
+              {step === 'date' ? (
                 <div className="space-y-4">
+                  {/* Date Scroll Picker */}
+                  <div className="flex gap-2 h-[180px] relative">
+                    {/* Center highlight */}
+                    <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-[44px] bg-primary/10 rounded-lg pointer-events-none z-0" />
+                    
+                    {/* Month */}
+                    <div 
+                      ref={monthRef}
+                      className="flex-[1.5] overflow-y-auto hide-scrollbar snap-y snap-mandatory relative z-10"
+                      style={{ scrollSnapType: 'y mandatory' }}
+                      onScroll={() => handleScrollEnd(monthRef, Array.from({ length: 12 }, (_, i) => i), setMonth, 'month')}
+                    >
+                      <div className="h-[68px]" />
+                      {months.map((m, index) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setMonth(index)}
+                          className={cn(
+                            "w-full h-[44px] flex items-center justify-center text-base font-medium transition-all snap-center touch-active",
+                            month === index ? "text-primary font-bold" : "text-muted-foreground"
+                          )}
+                        >
+                          {m}
+                        </button>
+                      ))}
+                      <div className="h-[68px]" />
+                    </div>
+                    
+                    {/* Day */}
+                    <div 
+                      ref={dayRef}
+                      className="flex-1 overflow-y-auto hide-scrollbar snap-y snap-mandatory relative z-10"
+                      style={{ scrollSnapType: 'y mandatory' }}
+                      onScroll={() => handleScrollEnd(dayRef, days, setDay, 'day')}
+                    >
+                      <div className="h-[68px]" />
+                      {days.map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setDay(d)}
+                          className={cn(
+                            "w-full h-[44px] flex items-center justify-center text-lg font-medium transition-all snap-center touch-active",
+                            day === d ? "text-primary font-bold" : "text-muted-foreground"
+                          )}
+                        >
+                          {d}
+                        </button>
+                      ))}
+                      <div className="h-[68px]" />
+                    </div>
+                    
+                    {/* Year */}
+                    <div 
+                      ref={yearRef}
+                      className="flex-1 overflow-y-auto hide-scrollbar snap-y snap-mandatory relative z-10"
+                      style={{ scrollSnapType: 'y mandatory' }}
+                      onScroll={() => handleScrollEnd(yearRef, years, setYear, 'year')}
+                    >
+                      <div className="h-[68px]" />
+                      {years.map((y) => (
+                        <button
+                          key={y}
+                          type="button"
+                          onClick={() => setYear(y)}
+                          className={cn(
+                            "w-full h-[44px] flex items-center justify-center text-lg font-medium transition-all snap-center touch-active",
+                            year === y ? "text-primary font-bold" : "text-muted-foreground"
+                          )}
+                        >
+                          {y}
+                        </button>
+                      ))}
+                      <div className="h-[68px]" />
+                    </div>
+                  </div>
+                  
+                  {/* Selected date summary */}
                   <div className="p-3 bg-primary/15 rounded-lg border-2 border-primary/40">
                     <p className="text-xs text-primary font-medium uppercase tracking-wide">Date selected:</p>
-                    <p className="font-bold text-lg text-foreground">{format(date, 'MM/dd/yyyy')} ({format(date, 'EEE')})</p>
+                    <p className="font-bold text-lg text-foreground">
+                      {String(month + 1).padStart(2, '0')}/{String(day).padStart(2, '0')}/{year} ({getDayOfWeek()})
+                    </p>
                   </div>
+                  
+                  {/* Next button */}
                   <Button
                     className="w-full h-12 text-base"
-                    onClick={() => setTimeOpen(true)}
+                    onClick={() => setStep('time')}
                   >
                     <Clock className="w-5 h-5 mr-2" />
                     Select Time
@@ -175,11 +255,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <p className="text-sm font-medium text-center text-muted-foreground">
-                    Select Time
-                  </p>
-                  
-                  {/* Scroll Picker */}
+                  {/* Time Scroll Picker */}
                   <div className="flex gap-2 h-[180px] relative">
                     {/* Center highlight */}
                     <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-[44px] bg-primary/10 rounded-lg pointer-events-none z-0" />
@@ -266,14 +342,24 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                     <p className="font-bold text-lg text-foreground">{displayValue}</p>
                   </div>
                   
-                  {/* Done button */}
-                  <Button 
-                    type="button"
-                    className="w-full h-12 text-base touch-active"
-                    onClick={closeSheet}
-                  >
-                    Done
-                  </Button>
+                  {/* Back and Done buttons */}
+                  <div className="flex gap-3">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      className="flex-1 h-12 text-base touch-active"
+                      onClick={() => setStep('date')}
+                    >
+                      Back
+                    </Button>
+                    <Button 
+                      type="button"
+                      className="flex-1 h-12 text-base touch-active"
+                      onClick={closeSheet}
+                    >
+                      Done
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
@@ -293,12 +379,12 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           variant="outline"
           className={cn(
             "w-full h-[52px] justify-start text-left font-normal px-4 gap-3 touch-active",
-            !date && "text-muted-foreground"
+            "text-muted-foreground"
           )}
-          onClick={() => setDateOpen(true)}
+          onClick={() => onOpenChange?.(true)}
         >
           <CalendarIcon className="w-5 h-5 flex-shrink-0" />
-          {date ? displayValue : 'Select date & time'}
+          {displayValue || 'Select date & time'}
         </Button>
       </div>
     );
