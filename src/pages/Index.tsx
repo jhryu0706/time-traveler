@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Plus, X, MapPin, Clock, Menu, Minus } from "lucide-react";
+import { Plus, X, Clock, Minus } from "lucide-react";
 import LocationSelector from "@/components/LocationSelector";
 import DateTimeInput from "@/components/DateTimeInput";
 import { convertDateTime, isValidDateTime, formatDayOfWeek } from "@/utils/timezone";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Location {
@@ -149,39 +143,6 @@ const Index = () => {
         >
           Time Converter
         </h1>
-        {/* Edit Location/Time Menu - top right */}
-        {/* Onboarding - show when location permission denied */}
-        {isDateTimeValid && (
-          <div className="flex justify-end mb-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="text-muted-foreground flex items-center gap-1.5 text-[15px]">
-                  <Menu className="w-5 h-5" />
-                  <span>Edit Location/Time</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="bg-popover border-border min-w-[200px] p-2 animate-in fade-in-0 zoom-in-95 duration-200"
-              >
-                <DropdownMenuItem
-                  onClick={() => setLocationSelectorOpen(true)}
-                  className="flex items-center gap-3 cursor-pointer px-4 py-3 text-[15px] rounded-lg active:bg-hover hover:bg-hover focus:bg-hover focus:text-foreground"
-                >
-                  <MapPin className="w-5 h-5" />
-                  <span>Edit location</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setTimeSelectorOpen(true)}
-                  className="flex items-center gap-3 cursor-pointer px-4 py-3 text-[15px] rounded-lg active:bg-hover hover:bg-hover focus:bg-hover focus:text-foreground"
-                >
-                  <Clock className="w-5 h-5" />
-                  <span>Edit time</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
       </div>
 
       {/* Header */}
@@ -195,13 +156,19 @@ const Index = () => {
         {/* Main content - Time and Location */}
         {!missingDateorLoc ? (
           <div className="flex justify-between items-baseline mb-4">
-            <span className="text-[32px] text-foreground">
+            <button
+              onClick={() => setLocationSelectorOpen(true)}
+              className="text-[32px] text-foreground hover:text-primary transition-colors touch-active"
+            >
               {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
-            </span>
-            <div className="flex items-baseline gap-2">
+            </button>
+            <button
+              onClick={() => setTimeSelectorOpen(true)}
+              className="flex items-baseline gap-2 hover:text-primary transition-colors touch-active"
+            >
               {isDateTimeValid ? (
                 <>
-                  <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
+                  <span className="text-[32px] leading-none font-light tabular-nums text-foreground hover:text-primary">
                     {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[0] || time12.hours + ":" + time12.minutes}
                   </span>
                   <span className="text-[13px] text-muted-foreground">
@@ -216,7 +183,7 @@ const Index = () => {
                   <span className="text-[13px] text-muted-foreground">{time12.ampm}</span>
                 </>
               )}
-            </div>
+            </button>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 px-8">
