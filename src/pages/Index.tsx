@@ -195,7 +195,7 @@ const Index = () => {
         {/* Main content - Time and Location */}
         {!missingDateorLoc ? (
           <div className="flex justify-between items-baseline mb-4">
-            <span className="text-[32px] text-primary">
+            <span className="text-[32px] text-foreground">
               {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
             </span>
             <div className="flex items-baseline gap-2">
