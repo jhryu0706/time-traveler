@@ -147,11 +147,6 @@ const Index = () => {
 
       {/* Header */}
       <div className="px-6 pb-6">
-        {/* Secondary header */}
-        <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
-          <span>{formatDate(currentTime)}</span>
-          <span className="text-muted-foreground">Source time</span>
-        </div>
 
         {/* Main content - Time and Location */}
         {!missingDateorLoc ? (
