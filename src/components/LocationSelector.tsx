@@ -111,9 +111,9 @@ export default function LocationSelector({
 
         {/* Bottom Sheet - Fixed 60% height */}
         <div className="fixed inset-x-0 bottom-0 popup-container border-t rounded-t-2xl z-50 animate-slide-up h-[60vh] flex flex-col">
-          {/* Search Header with X button */}
-          <div className="px-4 py-3 border-b border-border">
-            <div className="flex items-center gap-3 px-4 py-3 bg-secondary/50 border border-border rounded-xl">
+          {/* Search Header with X button outside */}
+          <div className="px-4 py-3 border-b border-border flex items-center gap-3">
+            <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-secondary/50 border border-border rounded-xl">
               <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
               <input
                 ref={inputRef}
@@ -124,10 +124,10 @@ export default function LocationSelector({
                 className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-base"
                 autoFocus
               />
-              <button onClick={() => setIsOpen(false)} className="p-1 touch-active">
-                <X className="w-5 h-5 text-muted-foreground" />
-              </button>
             </div>
+            <button onClick={() => setIsOpen(false)} className="p-2 touch-active">
+              <X className="w-5 h-5 text-muted-foreground" />
+            </button>
           </div>
 
           <div className="overflow-y-auto flex-1 hide-scrollbar">
