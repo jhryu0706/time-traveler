@@ -100,7 +100,7 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
         />
         
         {/* Bottom Sheet */}
-        <div className="fixed inset-x-0 bottom-0 bg-popover border-t border-border rounded-t-2xl z-50 animate-slide-up max-h-[80vh] flex flex-col">
+        <div className="fixed inset-x-0 bottom-0 popup-container border-t rounded-t-2xl z-50 animate-slide-up max-h-[80vh] flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <span className="font-medium text-foreground">{label}</span>
@@ -133,7 +133,7 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
               <button
                 key={`${city.name}-${city.country}-${index}`}
                 onClick={() => handleCitySelect(city)}
-                className="w-full px-4 py-4 text-left transition-colors flex items-center justify-between touch-active active:bg-hover hover:bg-hover"
+                className="w-full px-4 py-4 text-left flex items-center justify-between touch-active popup-item"
               >
                 <div className="flex items-center gap-3">
                   <MapPin className="w-5 h-5 text-muted-foreground" />
@@ -227,7 +227,7 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
 
       {/* Dropdown - Full Screen on Mobile */}
       {isOpen && (
-        <div className="fixed inset-x-0 bottom-0 top-auto md:absolute md:top-full md:bottom-auto md:left-0 md:right-0 md:mt-2 bg-popover border-t md:border border-border md:rounded-xl shadow-lg z-50 animate-slide-up">
+        <div className="fixed inset-x-0 bottom-0 top-auto md:absolute md:top-full md:bottom-auto md:left-0 md:right-0 md:mt-2 popup-container border-t md:border md:rounded-xl shadow-lg z-50 animate-slide-up">
           {/* Mobile Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border md:hidden">
             <span className="font-medium text-foreground">Select Location</span>
@@ -244,7 +244,7 @@ export default function LocationSelector({ label, value, onChange, isOpen: exter
               <button
                 key={`${city.name}-${city.country}-${index}`}
                 onClick={() => handleCitySelect(city)}
-                className="w-full px-4 py-4 text-left transition-colors flex items-center justify-between touch-active active:bg-hover hover:bg-hover"
+                className="w-full px-4 py-4 text-left flex items-center justify-between touch-active popup-item"
               >
                 <div className="flex items-center gap-3">
                   <MapPin className="w-5 h-5 text-muted-foreground" />

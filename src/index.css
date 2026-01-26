@@ -197,6 +197,16 @@
                 inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
   }
 
+  /* Shared popup/dropdown container styling */
+  .popup-container {
+    @apply bg-popover border border-border text-popover-foreground;
+  }
+
+  /* Shared popup/dropdown item styling */
+  .popup-item {
+    @apply transition-colors active:bg-hover hover:bg-hover focus:bg-hover focus:text-foreground;
+  }
+
   /* Button press animation */
   .btn-press {
     @apply transition-all duration-150 ease-out;
