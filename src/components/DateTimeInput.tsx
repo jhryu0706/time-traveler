@@ -246,6 +246,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                   
                   {/* Next button */}
                   <Button
+                    variant="secondary"
                     className="w-full h-12 text-base"
                     onClick={() => setStep('time')}
                   >
@@ -354,6 +355,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                     </Button>
                     <Button 
                       type="button"
+                      variant="secondary"
                       className="flex-1 h-12 text-base touch-active"
                       onClick={closeSheet}
                     >
