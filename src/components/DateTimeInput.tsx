@@ -150,8 +150,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <div>
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Selected:</p>
-                <p className="text-base font-medium text-primary">{displayTime}</p>
-                <p className="text-base text-primary">{displayDate}</p>
+                <p className="text-base font-medium text-primary">{displayTime} · {displayDate}</p>
               </div>
               <button
                 onClick={() => setStep(step === 'date' ? 'time' : 'date')}
