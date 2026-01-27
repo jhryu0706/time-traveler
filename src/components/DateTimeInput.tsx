@@ -120,7 +120,8 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       return format(date, 'EEE');
     };
 
-    const displayValue = `${String(month + 1).padStart(2, '0')}/${String(day).padStart(2, '0')}/${year} (${getDayOfWeek()}) at ${hour}:${String(minute).padStart(2, '0')} ${period}`;
+    const displayTime = `${hour}:${String(minute).padStart(2, '0')} ${period}`;
+    const displayDate = `${String(month + 1).padStart(2, '0')}/${String(day).padStart(2, '0')}/${year} (${getDayOfWeek()})`;
 
     const closeSheet = () => {
       if (onOpenChange) {
@@ -147,7 +148,8 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
               <div className="flex items-center gap-3 flex-1">
                 <div>
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Selected:</p>
-                  <p className="font-medium text-primary">{displayValue}</p>
+                  <p className="font-medium text-primary">{displayTime}</p>
+                  <p className="text-sm text-primary">{displayDate}</p>
                 </div>
                 <Button
                   variant="outline"
@@ -247,18 +249,10 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                     </div>
                   </div>
                   
-                  {/* Selected date summary */}
-                  <div className="p-3 bg-secondary/50 rounded-lg border border-border">
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Date selected:</p>
-                    <p className="font-bold text-lg text-foreground">
-                      {String(month + 1).padStart(2, '0')}/{String(day).padStart(2, '0')}/{year} ({getDayOfWeek()})
-                    </p>
-                  </div>
-                  
                   {/* Done button */}
                   <Button
                     variant="secondary"
-                    className="w-full h-12 text-base"
+                    className="w-full h-14 text-lg font-medium"
                     onClick={closeSheet}
                   >
                     Done
@@ -347,17 +341,11 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                     </div>
                   </div>
                   
-                  {/* Selected summary */}
-                  <div className="p-3 bg-secondary/50 rounded-lg border border-border">
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Selected:</p>
-                    <p className="font-bold text-lg text-foreground">{displayValue}</p>
-                  </div>
-                  
                   {/* Done button */}
                   <Button 
                     type="button"
                     variant="secondary"
-                    className="w-full h-12 text-base touch-active"
+                    className="w-full h-14 text-lg font-medium touch-active"
                     onClick={closeSheet}
                   >
                     Done
@@ -386,7 +374,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           onClick={() => onOpenChange?.(true)}
         >
           <CalendarIcon className="w-5 h-5 flex-shrink-0" />
-          {displayValue || 'Select date & time'}
+          {displayTime ? `${displayDate} at ${displayTime}` : 'Select date & time'}
         </Button>
       </div>
     );
