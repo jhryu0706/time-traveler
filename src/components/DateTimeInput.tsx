@@ -145,26 +145,16 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           <div className="fixed inset-x-0 bottom-0 bg-popover border-t border-border rounded-t-2xl z-50 animate-slide-up max-h-[80vh] flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <div className="flex items-center gap-3 flex-1">
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Selected:</p>
-                  <p className="font-medium text-primary">{displayTime}</p>
-                  <p className="text-sm text-primary">{displayDate}</p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setStep('date')}
-                  className="text-xs px-4"
-                >
-                  Edit Date
-                </Button>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Selected:</p>
+                <p className="text-base font-medium text-primary">{displayTime}</p>
+                <p className="text-base text-primary">{displayDate}</p>
               </div>
               <button
-                onClick={closeSheet}
-                className="p-2 touch-active"
+                onClick={() => setStep('date')}
+                className="text-sm text-muted-foreground underline underline-offset-2 touch-active"
               >
-                <X className="w-5 h-5 text-muted-foreground" />
+                Edit Date
               </button>
             </div>
             
