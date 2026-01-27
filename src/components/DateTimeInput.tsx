@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, forwardRef, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, forwardRef, useCallback } from 'react';
 import { Calendar as CalendarIcon, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -17,8 +17,6 @@ const months = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 const days = Array.from({ length: 31 }, (_, i) => i + 1);
-const currentYear = new Date().getFullYear();
-const years = Array.from({ length: 20 }, (_, i) => currentYear - 5 + i);
 const hours = Array.from({ length: 12 }, (_, i) => i + 1);
 const minutes = Array.from({ length: 60 }, (_, i) => i);
 const periods = ['AM', 'PM'];
@@ -28,6 +26,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
     // Initialize time from current time
     const now = new Date();
     const currentHour = now.getHours();
+    const [baseYear, setBaseYear] = useState(() => now.getFullYear());
     const [month, setMonth] = useState(now.getMonth());
     const [day, setDay] = useState(now.getDate());
     const [year, setYear] = useState(now.getFullYear());
@@ -35,6 +34,9 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
     const [minute, setMinute] = useState(now.getMinutes());
     const [period, setPeriod] = useState<'AM' | 'PM'>(currentHour >= 12 ? 'PM' : 'AM');
     const [step, setStep] = useState<'date' | 'time'>('time');
+
+    // Only allow selecting the current year ± 1, per product requirement.
+    const years = useMemo(() => [baseYear - 1, baseYear, baseYear + 1], [baseYear]);
     
     const monthRef = useRef<HTMLDivElement>(null);
     const dayRef = useRef<HTMLDivElement>(null);
@@ -55,19 +57,22 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       onChange(formatted);
     }, [month, day, year, hour, minute, period, onChange]);
 
-    // Reset to current time/date and default to time step when sheet opens
-    useEffect(() => {
-      if (externalOpen) {
-        const now = new Date();
-        const currentHour = now.getHours();
-        setMonth(now.getMonth());
-        setDay(now.getDate());
-        setYear(now.getFullYear());
-        setHour(currentHour % 12 || 12);
-        setMinute(now.getMinutes());
-        setPeriod(currentHour >= 12 ? 'PM' : 'AM');
-        setStep('time');
-      }
+    // Reset to *current* time/date every time the sheet opens.
+    // useLayoutEffect prevents a one-frame flash of a stale year (e.g. 2040).
+    useLayoutEffect(() => {
+      if (!externalOpen) return;
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentYear = now.getFullYear();
+
+      setBaseYear(currentYear);
+      setMonth(now.getMonth());
+      setDay(now.getDate());
+      setYear(currentYear);
+      setHour(currentHour % 12 || 12);
+      setMinute(now.getMinutes());
+      setPeriod(currentHour >= 12 ? 'PM' : 'AM');
+      setStep('time');
     }, [externalOpen]);
 
     // Scroll to selected value in picker
@@ -117,7 +122,8 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
         setTimeout(() => {
           scrollToSelected(monthRef, month);
           scrollToSelected(dayRef, day - 1);
-          scrollToSelected(yearRef, years.indexOf(year));
+          const yearIndex = years.indexOf(year);
+          scrollToSelected(yearRef, yearIndex === -1 ? 1 : yearIndex);
         }, 150);
       } else if (step === 'time') {
         setTimeout(() => {
@@ -126,7 +132,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           scrollToSelected(periodRef, period === 'AM' ? 0 : 1);
         }, 150);
       }
-    }, [step, externalOpen, month, day, year, hour, minute, period]);
+    }, [step, externalOpen, month, day, year, years, hour, minute, period]);
 
     const getDayOfWeek = () => {
       const date = new Date(year, month, day);
