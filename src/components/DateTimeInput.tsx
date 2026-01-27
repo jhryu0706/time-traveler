@@ -161,7 +161,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                   {/* Date Scroll Picker */}
                   <div className="flex gap-2 h-[180px] relative">
                     {/* Center highlight */}
-                    <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-[44px] bg-primary/10 rounded-lg pointer-events-none z-0" />
+                    <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-[44px] bg-secondary/50 rounded-lg pointer-events-none z-0" />
                     
                     {/* Month */}
                     <div 
@@ -178,7 +178,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                           onClick={() => setMonth(index)}
                           className={cn(
                             "w-full h-[44px] flex items-center justify-center text-base font-medium transition-all snap-center touch-active",
-                            month === index ? "text-primary font-bold" : "text-muted-foreground"
+                            month === index ? "text-foreground font-bold" : "text-muted-foreground"
                           )}
                         >
                           {m}
@@ -202,7 +202,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                           onClick={() => setDay(d)}
                           className={cn(
                             "w-full h-[44px] flex items-center justify-center text-lg font-medium transition-all snap-center touch-active",
-                            day === d ? "text-primary font-bold" : "text-muted-foreground"
+                            day === d ? "text-foreground font-bold" : "text-muted-foreground"
                           )}
                         >
                           {d}
@@ -226,7 +226,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                           onClick={() => setYear(y)}
                           className={cn(
                             "w-full h-[44px] flex items-center justify-center text-lg font-medium transition-all snap-center touch-active",
-                            year === y ? "text-primary font-bold" : "text-muted-foreground"
+                            year === y ? "text-foreground font-bold" : "text-muted-foreground"
                           )}
                         >
                           {y}
@@ -237,8 +237,8 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                   </div>
                   
                   {/* Selected date summary */}
-                  <div className="p-3 bg-primary/15 rounded-lg border-2 border-primary/40">
-                    <p className="text-xs text-primary font-medium uppercase tracking-wide">Date selected:</p>
+                  <div className="p-3 bg-secondary/50 rounded-lg border border-border">
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Date selected:</p>
                     <p className="font-bold text-lg text-foreground">
                       {String(month + 1).padStart(2, '0')}/{String(day).padStart(2, '0')}/{year} ({getDayOfWeek()})
                     </p>
@@ -258,7 +258,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                   {/* Time Scroll Picker */}
                   <div className="flex gap-2 h-[180px] relative">
                     {/* Center highlight */}
-                    <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-[44px] bg-primary/10 rounded-lg pointer-events-none z-0" />
+                    <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-[44px] bg-secondary/50 rounded-lg pointer-events-none z-0" />
                     
                     {/* Hour */}
                     <div 
@@ -275,7 +275,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                           onClick={() => setHour(h)}
                           className={cn(
                             "w-full h-[44px] flex items-center justify-center text-lg font-medium transition-all snap-center touch-active",
-                            hour === h ? "text-primary font-bold" : "text-muted-foreground"
+                            hour === h ? "text-foreground font-bold" : "text-muted-foreground"
                           )}
                         >
                           {h}
@@ -302,7 +302,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                           onClick={() => setMinute(m)}
                           className={cn(
                             "w-full h-[44px] flex items-center justify-center text-lg font-medium transition-all snap-center touch-active",
-                            minute === m ? "text-primary font-bold" : "text-muted-foreground"
+                            minute === m ? "text-foreground font-bold" : "text-muted-foreground"
                           )}
                         >
                           {String(m).padStart(2, '0')}
@@ -326,7 +326,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                           onClick={() => setPeriod(p as 'AM' | 'PM')}
                           className={cn(
                             "w-full h-[44px] flex items-center justify-center text-lg font-medium transition-all snap-center touch-active",
-                            period === p ? "text-primary font-bold" : "text-muted-foreground"
+                            period === p ? "text-foreground font-bold" : "text-muted-foreground"
                           )}
                         >
                           {p}
@@ -337,8 +337,8 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                   </div>
                   
                   {/* Selected summary */}
-                  <div className="p-3 bg-primary/15 rounded-lg border-2 border-primary/40">
-                    <p className="text-xs text-primary font-medium uppercase tracking-wide">Selected:</p>
+                  <div className="p-3 bg-secondary/50 rounded-lg border border-border">
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Selected:</p>
                     <p className="font-bold text-lg text-foreground">{displayValue}</p>
                   </div>
                   
