@@ -101,22 +101,24 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       }, 100);
     }, []);
 
-    // Scroll to initial positions when step changes
+    // Scroll to initial positions when sheet opens or step changes
     useEffect(() => {
+      if (!externalOpen) return;
+      
       if (step === 'date') {
         setTimeout(() => {
           scrollToSelected(monthRef, month);
           scrollToSelected(dayRef, day - 1);
           scrollToSelected(yearRef, years.indexOf(year));
-        }, 100);
+        }, 150);
       } else if (step === 'time') {
         setTimeout(() => {
           scrollToSelected(hourRef, hour - 1);
           scrollToSelected(minuteRef, minute);
           scrollToSelected(periodRef, period === 'AM' ? 0 : 1);
-        }, 100);
+        }, 150);
       }
-    }, [step, month, day, year, hour, minute, period]);
+    }, [step, externalOpen, month, day, year, hour, minute, period]);
 
     const getDayOfWeek = () => {
       const date = new Date(year, month, day);
@@ -147,14 +149,14 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           {/* Bottom Sheet */}
           <div className="fixed inset-x-0 bottom-0 bg-popover border-t border-border rounded-t-2xl z-50 animate-slide-up max-h-[80vh] flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <div className="flex items-end justify-between px-4 py-3 border-b border-border">
               <div>
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Selected:</p>
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Selected:</p>
                 <p className="text-base font-medium text-primary">{displayTime} · {displayDate}</p>
               </div>
               <button
                 onClick={() => setStep(step === 'date' ? 'time' : 'date')}
-                className="text-sm text-muted-foreground underline underline-offset-2 touch-active"
+                className="text-base text-muted-foreground underline underline-offset-2 touch-active"
               >
                 {step === 'date' ? 'Edit Time' : 'Edit Date'}
               </button>
