@@ -173,7 +173,7 @@ export default function LocationSelector({
   // Original inline mode
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Clickable Input Area */}
+      {/* Clickable Trigger */}
       <button
         type="button"
         className={cn(
@@ -182,17 +182,15 @@ export default function LocationSelector({
         )}
         onClick={() => {
           setIsOpen(true);
-          setTimeout(() => inputRef.current?.focus(), 0);
+          setSearchQuery("");
+          setTimeout(() => inputRef.current?.focus(), 100);
         }}
       >
-        <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+        <MapPin className="w-5 h-5 text-muted-foreground flex-shrink-0" />
 
-        {value && !isOpen ? (
+        {value ? (
           <div className="flex-1 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="text-foreground font-medium text-base truncate">{value.name}</span>
-            </div>
+            <span className="text-foreground font-medium text-base truncate">{value.name}</span>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -206,34 +204,35 @@ export default function LocationSelector({
           </div>
         ) : (
           <>
-            <input
-              ref={inputRef}
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search cities..."
-              className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-base"
-              onClick={(e) => e.stopPropagation()}
-            />
-            <ChevronDown
-              className={cn("w-5 h-5 text-muted-foreground transition-transform duration-200", isOpen && "rotate-180")}
-            />
+            <span className="flex-1 text-muted-foreground text-base">Search cities...</span>
+            <ChevronDown className="w-5 h-5 text-muted-foreground" />
           </>
         )}
       </button>
 
-      {/* Dropdown - Full Screen on Mobile */}
+      {/* Dropdown with Search Inside */}
       {isOpen && (
-        <div className="fixed inset-x-0 bottom-0 top-auto md:absolute md:top-full md:bottom-auto md:left-0 md:right-0 md:mt-2 popup-container border-t md:border md:rounded-xl shadow-lg z-50 animate-slide-up">
-          {/* Mobile Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border md:hidden">
-            <span className="font-medium text-foreground">Select Location</span>
-            <button onClick={() => setIsOpen(false)} className="p-2 -mr-2 touch-active">
+        <div className="fixed inset-x-0 bottom-0 top-auto md:absolute md:top-full md:bottom-auto md:left-0 md:right-0 md:mt-2 popup-container border-t md:border md:rounded-xl shadow-lg z-50 animate-slide-up h-[60vh] md:h-auto flex flex-col">
+          {/* Search Header */}
+          <div className="px-4 py-3 border-b border-border flex items-center gap-3">
+            <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-secondary/50 border border-border rounded-xl">
+              <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search cities or countries..."
+                className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-base"
+                autoFocus
+              />
+            </div>
+            <button onClick={() => setIsOpen(false)} className="p-2 touch-active">
               <X className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
 
-          <div className="overflow-y-auto max-h-[60vh] md:max-h-72 hide-scrollbar">
+          <div className="overflow-y-auto flex-1 md:max-h-72 hide-scrollbar">
             {filteredCities.map((city, index) => (
               <button
                 key={`${city.name}-${city.country}-${index}`}
@@ -250,7 +249,7 @@ export default function LocationSelector({
                 <span className="text-sm text-muted-foreground">{getCurrentTimeInTimezone(city.timezone)}</span>
               </button>
             ))}
-            {filteredCities.length === 0 && searchQuery.length >= 2 && (
+            {filteredCities.length === 0 && searchQuery.length > 0 && (
               <div className="p-4 text-center text-muted-foreground">No cities found</div>
             )}
           </div>
