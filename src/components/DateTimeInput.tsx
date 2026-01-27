@@ -52,10 +52,10 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       onChange(formatted);
     }, [month, day, year, hour, minute, period, onChange]);
 
-    // Reset step when sheet opens
+    // Default to time step when sheet opens
     useEffect(() => {
       if (externalOpen) {
-        setStep('date');
+        setStep('time');
       }
     }, [externalOpen]);
 
@@ -144,15 +144,26 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           <div className="fixed inset-x-0 bottom-0 bg-popover border-t border-border rounded-t-2xl z-50 animate-slide-up max-h-[80vh] flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <span className="font-medium text-foreground">
-                {step === 'date' ? 'Select Date' : 'Select Time'}
-              </span>
-              <button
-                onClick={closeSheet}
-                className="p-2 -mr-2 touch-active"
-              >
-                <X className="w-5 h-5 text-muted-foreground" />
-              </button>
+              <div className="flex-1">
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Selected:</p>
+                <p className="font-medium text-foreground">{displayValue}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setStep('date')}
+                  className="text-xs"
+                >
+                  Edit Date
+                </Button>
+                <button
+                  onClick={closeSheet}
+                  className="p-2 touch-active"
+                >
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
             </div>
             
             <div className="p-4 overflow-y-auto">
