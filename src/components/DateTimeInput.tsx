@@ -25,13 +25,16 @@ const periods = ['AM', 'PM'];
 
 const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
   function DateTimeInput({ value, onChange, isValid, isOpen: externalOpen, onOpenChange }, ref) {
-    const [month, setMonth] = useState(new Date().getMonth());
-    const [day, setDay] = useState(new Date().getDate());
-    const [year, setYear] = useState(currentYear);
-    const [hour, setHour] = useState(12);
-    const [minute, setMinute] = useState(0);
-    const [period, setPeriod] = useState<'AM' | 'PM'>('AM');
-    const [step, setStep] = useState<'date' | 'time'>('date');
+    // Initialize time from current time
+    const now = new Date();
+    const currentHour = now.getHours();
+    const [month, setMonth] = useState(now.getMonth());
+    const [day, setDay] = useState(now.getDate());
+    const [year, setYear] = useState(now.getFullYear());
+    const [hour, setHour] = useState(currentHour % 12 || 12);
+    const [minute, setMinute] = useState(now.getMinutes());
+    const [period, setPeriod] = useState<'AM' | 'PM'>(currentHour >= 12 ? 'PM' : 'AM');
+    const [step, setStep] = useState<'date' | 'time'>('time');
     
     const monthRef = useRef<HTMLDivElement>(null);
     const dayRef = useRef<HTMLDivElement>(null);
@@ -151,10 +154,10 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                 <p className="text-base text-primary">{displayDate}</p>
               </div>
               <button
-                onClick={() => setStep('date')}
+                onClick={() => setStep(step === 'date' ? 'time' : 'date')}
                 className="text-sm text-muted-foreground underline underline-offset-2 touch-active"
               >
-                Edit Date
+                {step === 'date' ? 'Edit Time' : 'Edit Date'}
               </button>
             </div>
             
