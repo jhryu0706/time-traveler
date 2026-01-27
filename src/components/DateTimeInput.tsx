@@ -55,9 +55,17 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       onChange(formatted);
     }, [month, day, year, hour, minute, period, onChange]);
 
-    // Default to time step when sheet opens
+    // Reset to current time/date and default to time step when sheet opens
     useEffect(() => {
       if (externalOpen) {
+        const now = new Date();
+        const currentHour = now.getHours();
+        setMonth(now.getMonth());
+        setDay(now.getDate());
+        setYear(now.getFullYear());
+        setHour(currentHour % 12 || 12);
+        setMinute(now.getMinutes());
+        setPeriod(currentHour >= 12 ? 'PM' : 'AM');
         setStep('time');
       }
     }, [externalOpen]);
@@ -149,17 +157,19 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           {/* Bottom Sheet */}
           <div className="fixed inset-x-0 bottom-0 bg-popover border-t border-border rounded-t-2xl z-50 animate-slide-up max-h-[80vh] flex flex-col">
             {/* Header */}
-            <div className="flex items-end justify-between px-4 py-3 border-b border-border">
+            <div className="flex justify-between px-4 py-3 border-b border-border">
               <div>
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Selected:</p>
-                <p className="text-base font-medium text-primary">{displayTime} · {displayDate}</p>
+                <p className="text-base font-medium text-primary leading-none">{displayTime} · {displayDate}</p>
               </div>
-              <button
-                onClick={() => setStep(step === 'date' ? 'time' : 'date')}
-                className="text-base text-muted-foreground underline underline-offset-2 touch-active"
-              >
-                {step === 'date' ? 'Edit Time' : 'Edit Date'}
-              </button>
+              <div className="flex items-end">
+                <button
+                  onClick={() => setStep(step === 'date' ? 'time' : 'date')}
+                  className="text-base text-muted-foreground underline underline-offset-2 touch-active leading-none"
+                >
+                  {step === 'date' ? 'Edit Time' : 'Edit Date'}
+                </button>
+              </div>
             </div>
             
             <div className="p-4 overflow-y-auto">
