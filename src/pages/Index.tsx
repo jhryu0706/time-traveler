@@ -301,7 +301,10 @@ const Index = () => {
             onClick={() => setRemoveMode(!removeMode)}
           >
             {removeMode ? (
-              <span>Done</span>
+              <>
+                <X className="w-5 h-5" />
+                <span>Done</span>
+              </>
             ) : (
               <>
                 <Minus className="w-5 h-5" />
@@ -371,14 +374,9 @@ const Index = () => {
           return (
             <div
               key={location.name}
-              className={`mx-4 mb-3 city-card p-4 animate-fade-in ${removeMode ? "cursor-pointer active:opacity-80" : ""}`}
+              className="mx-4 mb-3 city-card p-4 animate-fade-in"
               style={{
                 background: `linear-gradient(135deg, hsl(0 0% 8%) 0%, hsl(0 0% 8%) 100%)`,
-              }}
-              onClick={() => {
-                if (removeMode) {
-                  removeTargetLocation(index);
-                }
               }}
             >
               {/* Secondary header */}
@@ -389,11 +387,13 @@ const Index = () => {
 
               {/* Main content - Time and City */}
               <div className="flex justify-between items-baseline">
-                <div className="flex items-center gap-2">
-                  <span className="text-[32px] text-foreground">{location.name.split(",")[0]}</span>
+                <div className="flex items-center gap-3">
                   {removeMode && (
-                    <ChevronRight className="w-5 h-5 text-destructive animate-fade-in" />
+                    <button onClick={() => removeTargetLocation(index)} className="text-destructive animate-fade-in">
+                      <X className="w-5 h-5" />
+                    </button>
                   )}
+                  <span className="text-[32px] text-foreground">{location.name.split(",")[0]}</span>
                 </div>
 
                 <div className="flex items-baseline gap-2">
