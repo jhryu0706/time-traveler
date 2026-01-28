@@ -84,20 +84,8 @@ const Index = () => {
 
   const removeTargetLocation = (index: number) => {
     const newLocations = targetLocations.filter((_, i) => i !== index);
-    
-    if (newLocations.length === 0 && targetLocations.length > 0) {
-      // Two-phase: fade out both buttons, then fade in centered
-      setIsTransitioningToEmpty(true);
-      setTimeout(() => {
-        setTargetLocations(newLocations);
-        setRemoveMode(false);
-        setTimeout(() => {
-          setIsTransitioningToEmpty(false);
-        }, 50); // Small delay before fade-in
-      }, 200);
-    } else {
-      setTargetLocations(newLocations);
-    }
+    setTargetLocations(newLocations);
+    // Stay in remove mode even when empty - user must click Done to exit
   };
 
   const getConvertedTime = (targetTimezone: string) => {
@@ -186,13 +174,14 @@ const Index = () => {
               onClick={() => setLocationSelectorOpen(true)}
               className="text-[32px] text-foreground transition-colors touch-active flex items-center gap-1"
             >
-              {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
             </button>
             <button
               onClick={() => setTimeSelectorOpen(true)}
               className="flex items-center gap-1 transition-colors touch-active"
             >
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
               {isDateTimeValid ? (
                 <>
                   <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
@@ -201,7 +190,6 @@ const Index = () => {
                   <span className="text-[13px] text-muted-foreground">
                     {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[1] || time12.ampm}
                   </span>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </>
               ) : (
                 <>
@@ -209,7 +197,6 @@ const Index = () => {
                     {time12.hours}:{time12.minutes}
                   </span>
                   <span className="text-[13px] text-muted-foreground">{time12.ampm}</span>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </>
               )}
             </button>
@@ -301,10 +288,7 @@ const Index = () => {
             onClick={() => setRemoveMode(!removeMode)}
           >
             {removeMode ? (
-              <>
-                <X className="w-5 h-5" />
-                <span>Done</span>
-              </>
+              <span>Done</span>
             ) : (
               <>
                 <Minus className="w-5 h-5" />
@@ -372,12 +356,16 @@ const Index = () => {
           }
 
           return (
-            <div
+            <button
               key={location.name}
-              className="mx-4 mb-3 city-card p-4 animate-fade-in"
+              onClick={() => removeMode && removeTargetLocation(index)}
+              className={`mx-4 mb-3 city-card p-4 animate-fade-in w-[calc(100%-2rem)] text-left transition-all duration-200 ${
+                removeMode ? "border-2 border-destructive" : ""
+              }`}
               style={{
                 background: `linear-gradient(135deg, hsl(0 0% 8%) 0%, hsl(0 0% 8%) 100%)`,
               }}
+              disabled={!removeMode}
             >
               {/* Secondary header */}
               <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
@@ -387,14 +375,7 @@ const Index = () => {
 
               {/* Main content - Time and City */}
               <div className="flex justify-between items-baseline">
-                <div className="flex items-center gap-3">
-                  {removeMode && (
-                    <button onClick={() => removeTargetLocation(index)} className="text-destructive animate-fade-in">
-                      <X className="w-5 h-5" />
-                    </button>
-                  )}
-                  <span className="text-[32px] text-foreground">{location.name.split(",")[0]}</span>
-                </div>
+                <span className="text-[32px] text-foreground">{location.name.split(",")[0]}</span>
 
                 <div className="flex items-baseline gap-2">
                   <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
@@ -403,7 +384,7 @@ const Index = () => {
                   <span className="text-[13px] text-muted-foreground">{displayTime.ampm}</span>
                 </div>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
