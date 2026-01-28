@@ -253,13 +253,13 @@ const Index = () => {
       />
 
       {/* Add/Remove Buttons */}
-      <div className={`px-6 py-3 bg-background flex items-center transition-all duration-500 ease-out ${targetLocations.length > 0 ? 'justify-between' : 'justify-center'}`}>
+      <div className={`px-6 py-3 bg-background flex items-center transition-all duration-1000 ease-out ${targetLocations.length > 0 ? 'justify-between' : 'justify-center'}`}>
         {/* Remove button - only visible when there are cities */}
         <div 
-          className={`transition-all duration-500 ease-out ${targetLocations.length > 0 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 absolute pointer-events-none'}`}
+          className={`transition-all duration-700 ease-out ${targetLocations.length > 0 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 absolute pointer-events-none'}`}
         >
           <button
-            className="text-primary text-[17px] font-normal flex items-center gap-2"
+            className="text-primary text-[17px] font-normal flex items-center gap-2 transition-all duration-300"
             onClick={() => setRemoveMode(!removeMode)}
           >
             {removeMode ? (
@@ -274,7 +274,7 @@ const Index = () => {
         </div>
 
         <button
-          className={`text-primary text-[17px] font-normal flex items-center gap-2 transition-all duration-500 ease-out ${targetLocations.length > 0 ? 'translate-x-0' : ''}`}
+          className={`text-primary text-[17px] font-normal flex items-center gap-2 transition-all duration-1000 ease-out ${targetLocations.length > 0 ? 'translate-x-0' : ''}`}
           onClick={() => {
             setAddCitySelectorOpen(true);
             if (removeMode) setRemoveMode(false);
