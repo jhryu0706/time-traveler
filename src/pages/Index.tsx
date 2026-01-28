@@ -257,6 +257,9 @@ const Index = () => {
         onOpenChange={setTimeSelectorOpen}
       />
 
+      {/* Separator */}
+      <div className="mx-6 border-t border-border/30" />
+
       {/* Add/Remove Buttons */}
       <div className={`px-6 py-3 bg-background flex items-center transition-all duration-[600ms] ease-out ${targetLocations.length > 0 ? 'justify-between' : 'justify-center'}`}>
         {/* Remove button - only visible when there are cities */}
