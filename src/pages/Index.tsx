@@ -25,6 +25,7 @@ const Index = () => {
   const [showTimeChoiceDialog, setShowTimeChoiceDialog] = useState(false);
   const [removeMode, setRemoveMode] = useState(false);
   const [addCitySelectorOpen, setAddCitySelectorOpen] = useState(false);
+  const [removingIndex, setRemovingIndex] = useState<number | null>(null);
 
   const isDateTimeValid = isValidDateTime(dateTime);
 
@@ -71,7 +72,11 @@ const Index = () => {
   };
 
   const removeTargetLocation = (index: number) => {
-    setTargetLocations(targetLocations.filter((_, i) => i !== index));
+    setRemovingIndex(index);
+    setTimeout(() => {
+      setTargetLocations(targetLocations.filter((_, i) => i !== index));
+      setRemovingIndex(null);
+    }, 600);
   };
 
   const getConvertedTime = (targetTimezone: string) => {
@@ -253,28 +258,29 @@ const Index = () => {
       />
 
       {/* Add/Remove Buttons */}
-      <div className={`px-6 py-3 bg-background flex items-center transition-all duration-1000 ease-out ${targetLocations.length > 0 ? 'justify-between' : 'justify-center'}`}>
+      <div className={`px-6 py-3 bg-background flex items-center transition-all duration-[600ms] ease-out ${targetLocations.length > 0 ? 'justify-between' : 'justify-center'}`}>
         {/* Remove button - only visible when there are cities */}
         <div 
-          className={`transition-all duration-700 ease-out ${targetLocations.length > 0 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 absolute pointer-events-none'}`}
+          className={`transition-all duration-[600ms] ease-out ${targetLocations.length > 0 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12 absolute pointer-events-none'}`}
         >
           <button
-            className="text-primary text-[17px] font-normal flex items-center gap-2 transition-all duration-300"
+            className="text-primary text-[17px] font-normal flex items-center gap-2 relative h-6 min-w-[90px]"
             onClick={() => setRemoveMode(!removeMode)}
           >
-            {removeMode ? (
+            {/* Remove state */}
+            <div className={`flex items-center gap-2 transition-all duration-[600ms] ease-out absolute left-0 ${removeMode ? 'opacity-0 -translate-x-4' : 'opacity-100 translate-x-0'}`}>
+              <Minus className="w-5 h-5" />
+              <span>Remove</span>
+            </div>
+            {/* Done state */}
+            <div className={`flex items-center gap-2 transition-all duration-[600ms] ease-out absolute left-0 ${removeMode ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
               <span>Done</span>
-            ) : (
-              <>
-                <Minus className="w-5 h-5" />
-                <span>Remove</span>
-              </>
-            )}
+            </div>
           </button>
         </div>
 
         <button
-          className={`text-primary text-[17px] font-normal flex items-center gap-2 transition-all duration-1000 ease-out ${targetLocations.length > 0 ? 'translate-x-0' : ''}`}
+          className={`text-primary text-[17px] font-normal flex items-center gap-2 transition-all duration-[600ms] ease-out ${targetLocations.length > 0 ? 'translate-x-0' : ''}`}
           onClick={() => {
             setAddCitySelectorOpen(true);
             if (removeMode) setRemoveMode(false);
@@ -331,11 +337,15 @@ const Index = () => {
           return (
             <div
               key={location.name}
-              className={`mx-4 mb-3 city-card p-4 animate-fade-in transition-all duration-500 ease-out ${removeMode ? 'cursor-pointer ring-1 ring-destructive/30 bg-destructive/[0.03] active:bg-destructive/10' : 'ring-0 ring-transparent'}`}
+              className={`mx-4 mb-3 city-card p-4 transition-all duration-[600ms] ease-out ${
+                removingIndex === index 
+                  ? 'opacity-0 scale-95 translate-x-4' 
+                  : 'opacity-100 scale-100 translate-x-0'
+              } ${removeMode ? 'cursor-pointer ring-1 ring-destructive/30 bg-destructive/[0.03] active:bg-destructive/10' : 'ring-0 ring-transparent'}`}
               style={{
                 background: removeMode ? undefined : `linear-gradient(135deg, hsl(0 0% 8%) 0%, hsl(0 0% 8%) 100%)`,
               }}
-              onClick={() => removeMode && removeTargetLocation(index)}
+              onClick={() => removeMode && removingIndex === null && removeTargetLocation(index)}
             >
               {/* Secondary header */}
               <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
