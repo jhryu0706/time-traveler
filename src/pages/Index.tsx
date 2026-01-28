@@ -136,7 +136,7 @@ const Index = () => {
   return (
     <div className="h-screen bg-background text-foreground flex flex-col dark">
       {/* TIME CONVERTER Logo - Always at top */}
-      <div className="px-6 pt-6 pb-6">
+      <div className="px-6 pt-6 pb-10">
         <h1
           className="text-[13px] text-muted-foreground tracking-[0.2em] uppercase text-center"
           style={{ fontFamily: "'Inter Tight', sans-serif" }}
