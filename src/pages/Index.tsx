@@ -17,13 +17,14 @@ const Index = () => {
   const [sourceLocation, setSourceLocation] = useState<Location | null>(null);
   const [dateTime, setDateTime] = useState("");
   const [targetLocations, setTargetLocations] = useState<Location[]>([]);
-  const [showAddCity, setShowAddCity] = useState(false);
+  
   const [locationSelectorOpen, setLocationSelectorOpen] = useState(false);
   const [timeSelectorOpen, setTimeSelectorOpen] = useState(false);
   const [locationPermissionDenied, setLocationPermissionDenied] = useState(false);
   const [hasRequestedLocation, setHasRequestedLocation] = useState(false);
   const [showTimeChoiceDialog, setShowTimeChoiceDialog] = useState(false);
   const [removeMode, setRemoveMode] = useState(false);
+  const [addCitySelectorOpen, setAddCitySelectorOpen] = useState(false);
 
   const isDateTimeValid = isValidDateTime(dateTime);
 
@@ -67,7 +68,6 @@ const Index = () => {
     if (!targetLocations.find((l) => l.name === location.name)) {
       setTargetLocations([...targetLocations, location]);
     }
-    setShowAddCity(false);
   };
 
   const removeTargetLocation = (index: number) => {
@@ -153,22 +153,22 @@ const Index = () => {
           <span className="text-muted-foreground">Source time</span>
         </div>
 
-        {/* Main content - Time and Location */}
+      {/* Main content - Time and Location */}
         {!missingDateorLoc ? (
           <div className="flex justify-between items-baseline mb-4">
             <button
               onClick={() => setLocationSelectorOpen(true)}
-              className="text-[32px] text-foreground hover:text-primary transition-colors touch-active"
+              className="text-[32px] text-foreground transition-colors touch-active px-3 py-1 -mx-3 rounded-xl hover:bg-white/5 active:bg-white/10"
             >
               {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
             </button>
             <button
               onClick={() => setTimeSelectorOpen(true)}
-              className="flex items-baseline gap-2 hover:text-primary transition-colors touch-active"
+              className="flex items-baseline gap-2 transition-colors touch-active px-3 py-1 -mr-3 rounded-xl hover:bg-white/5 active:bg-white/10"
             >
               {isDateTimeValid ? (
                 <>
-                  <span className="text-[32px] leading-none font-light tabular-nums text-foreground hover:text-primary">
+                  <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
                     {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[0] || time12.hours + ":" + time12.minutes}
                   </span>
                   <span className="text-[13px] text-muted-foreground">
@@ -252,57 +252,57 @@ const Index = () => {
 
       {/* Add/Remove Buttons */}
       <div className="px-6 py-3 bg-background flex justify-between items-center">
-        <button
-          className="text-primary text-[17px] font-bold flex items-center gap-2"
-          onClick={() => {
-            setRemoveMode(!removeMode);
-            if (showAddCity) setShowAddCity(false);
-          }}
+        {/* Remove button - only visible when there are cities */}
+        <div 
+          className={`transition-opacity duration-300 ${targetLocations.length > 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         >
-          {removeMode ? (
-            <>
-              <X className="w-5 h-5" />
-              <span>Done</span>
-            </>
-          ) : (
-            <>
-              <Minus className="w-5 h-5" />
-              <span>Remove</span>
-            </>
-          )}
-        </button>
+          <button
+            className="text-primary text-[17px] font-bold flex items-center gap-2"
+            onClick={() => setRemoveMode(!removeMode)}
+          >
+            {removeMode ? (
+              <>
+                <X className="w-5 h-5" />
+                <span>Done</span>
+              </>
+            ) : (
+              <>
+                <Minus className="w-5 h-5" />
+                <span>Remove</span>
+              </>
+            )}
+          </button>
+        </div>
 
         <button
           className="text-primary text-[17px] font-bold flex items-center gap-2"
           onClick={() => {
-            setShowAddCity(!showAddCity);
+            setAddCitySelectorOpen(true);
             if (removeMode) setRemoveMode(false);
           }}
         >
-          {showAddCity ? (
-            <>
-              <X className="w-5 h-5" />
-              <span>Cancel</span>
-            </>
-          ) : (
-            <>
-              <Plus className="w-5 h-5" />
-              <span>Add City</span>
-            </>
-          )}
+          <Plus className="w-5 h-5" />
+          <span>Add City</span>
         </button>
       </div>
 
-      {/* Add City Panel */}
-      {showAddCity && (
-        <div className="bg-background p-4 animate-slide-up">
-          <LocationSelector label="Add Location" value={null} onChange={(loc) => loc && addTargetLocation(loc)} />
-        </div>
-      )}
+      {/* Add City Location Selector Sheet */}
+      <LocationSelector
+        label="Add Location"
+        value={null}
+        onChange={(loc) => {
+          if (loc) {
+            addTargetLocation(loc);
+            setAddCitySelectorOpen(false);
+          }
+        }}
+        isOpen={addCitySelectorOpen}
+        onOpenChange={setAddCitySelectorOpen}
+      />
 
       {/* Cities List */}
       <div className="flex-1 overflow-y-auto bg-background pt-3 pb-6">
-        {targetLocations.length === 0 && !showAddCity && (
+        {targetLocations.length === 0 && (
           <div className="px-6 py-8 text-center text-muted-foreground">
             <p className="text-[15px]">No cities added yet</p>
           </div>
