@@ -136,7 +136,7 @@ const Index = () => {
   return (
     <div className="h-screen bg-background text-foreground flex flex-col dark">
       {/* TIME CONVERTER Logo - Always at top */}
-      <div className="px-6 pt-14 pb-4">
+      <div className="px-6 pt-6 pb-6">
         <h1
           className="text-[13px] text-muted-foreground tracking-[0.2em] uppercase text-center"
           style={{ fontFamily: "'Inter Tight', sans-serif" }}
@@ -255,7 +255,7 @@ const Index = () => {
 
       {/* Add/Remove Buttons */}
       <div
-        className={`px-6 py-3 bg-background flex items-center transition-all duration-300 ${targetLocations.length > 0 ? "justify-between" : "justify-center"}`}
+        className={`px-6 py-3 bg-background flex items-center transition-all duration-1200 ${targetLocations.length > 0 ? "justify-between" : "justify-center"}`}
       >
         {/* Remove button - only visible when there are cities */}
         <div
@@ -280,7 +280,7 @@ const Index = () => {
         </div>
 
         <button
-          className={`text-primary text-[17px] font-bold flex items-center gap-2 transition-all duration-900 ${targetLocations.length > 0 ? "translate-x-0" : ""}`}
+          className={`text-primary text-[17px] font-bold flex items-center gap-2 transition-all duration-1200 ${targetLocations.length > 0 ? "translate-x-0" : ""}`}
           onClick={() => {
             setAddCitySelectorOpen(true);
             if (removeMode) setRemoveMode(false);
