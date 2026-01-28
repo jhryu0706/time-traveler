@@ -331,7 +331,7 @@ const Index = () => {
           return (
             <div
               key={location.name}
-              className={`mx-4 mb-3 city-card p-4 animate-fade-in transition-all duration-200 ${removeMode ? 'cursor-pointer ring-2 ring-destructive/50 bg-destructive/5 active:bg-destructive/10' : ''}`}
+              className={`mx-4 mb-3 city-card p-4 animate-fade-in transition-all duration-500 ease-out ${removeMode ? 'cursor-pointer ring-1 ring-destructive/30 bg-destructive/[0.03] active:bg-destructive/10' : 'ring-0 ring-transparent'}`}
               style={{
                 background: removeMode ? undefined : `linear-gradient(135deg, hsl(0 0% 8%) 0%, hsl(0 0% 8%) 100%)`,
               }}
