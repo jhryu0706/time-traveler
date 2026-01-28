@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, X, Clock, Minus } from "lucide-react";
+import { Plus, X, Clock, Minus, ChevronRight } from "lucide-react";
 import LocationSelector from "@/components/LocationSelector";
 import DateTimeInput from "@/components/DateTimeInput";
 import { convertDateTime, isValidDateTime, formatDayOfWeek } from "@/utils/timezone";
@@ -158,13 +158,14 @@ const Index = () => {
           <div className="flex justify-between items-baseline mb-4">
             <button
               onClick={() => setLocationSelectorOpen(true)}
-              className="text-[32px] text-foreground transition-colors touch-active px-3 py-1 -mx-3 rounded-xl hover:bg-white/5 active:bg-white/10"
+              className="text-[32px] text-foreground transition-colors touch-active flex items-center gap-1"
             >
               {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </button>
             <button
               onClick={() => setTimeSelectorOpen(true)}
-              className="flex items-baseline gap-2 transition-colors touch-active px-3 py-1 -mr-3 rounded-xl hover:bg-white/5 active:bg-white/10"
+              className="flex items-center gap-1 transition-colors touch-active"
             >
               {isDateTimeValid ? (
                 <>
@@ -174,6 +175,7 @@ const Index = () => {
                   <span className="text-[13px] text-muted-foreground">
                     {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[1] || time12.ampm}
                   </span>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </>
               ) : (
                 <>
@@ -181,6 +183,7 @@ const Index = () => {
                     {time12.hours}:{time12.minutes}
                   </span>
                   <span className="text-[13px] text-muted-foreground">{time12.ampm}</span>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </>
               )}
             </button>
@@ -251,10 +254,10 @@ const Index = () => {
       />
 
       {/* Add/Remove Buttons */}
-      <div className="px-6 py-3 bg-background flex justify-between items-center">
+      <div className={`px-6 py-3 bg-background flex items-center transition-all duration-300 ${targetLocations.length > 0 ? 'justify-between' : 'justify-center'}`}>
         {/* Remove button - only visible when there are cities */}
         <div 
-          className={`transition-opacity duration-300 ${targetLocations.length > 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`transition-all duration-300 ${targetLocations.length > 0 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute pointer-events-none'}`}
         >
           <button
             className="text-primary text-[17px] font-bold flex items-center gap-2"
@@ -275,7 +278,7 @@ const Index = () => {
         </div>
 
         <button
-          className="text-primary text-[17px] font-bold flex items-center gap-2"
+          className={`text-primary text-[17px] font-bold flex items-center gap-2 transition-all duration-300 ${targetLocations.length > 0 ? 'translate-x-0' : ''}`}
           onClick={() => {
             setAddCitySelectorOpen(true);
             if (removeMode) setRemoveMode(false);

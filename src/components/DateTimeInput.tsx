@@ -171,9 +171,9 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
               <div className="flex items-end">
                 <button
                   onClick={() => setStep(step === 'date' ? 'time' : 'date')}
-                  className="text-base text-muted-foreground underline underline-offset-2 touch-active leading-none"
+                  className="text-sm text-muted-foreground touch-active leading-none px-3 py-1.5 rounded-lg bg-secondary/50 border border-border/50 transition-colors active:bg-secondary"
                 >
-                  {step === 'date' ? 'Edit Time' : 'Edit Date'}
+                  {step === 'date' ? 'Change Time' : 'Change Date'}
                 </button>
               </div>
             </div>
