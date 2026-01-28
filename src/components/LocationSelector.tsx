@@ -137,12 +137,9 @@ export default function LocationSelector({
                 onClick={() => handleCitySelect(city)}
                 className="w-full px-4 py-4 text-left flex items-center justify-between touch-active popup-item"
               >
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-5 h-5 text-muted-foreground" />
-                  <div>
-                    <div className="text-foreground font-medium text-base">{city.name}</div>
-                    <div className="text-sm text-muted-foreground">{city.country}</div>
-                  </div>
+                <div>
+                  <div className="text-foreground font-medium text-base">{city.name}</div>
+                  <div className="text-sm text-muted-foreground">{city.country}</div>
                 </div>
                 <span className="text-sm text-muted-foreground">{getCurrentTimeInTimezone(city.timezone)}</span>
               </button>
@@ -239,12 +236,9 @@ export default function LocationSelector({
                 onClick={() => handleCitySelect(city)}
                 className="w-full px-4 py-4 text-left flex items-center justify-between touch-active popup-item"
               >
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-5 h-5 text-muted-foreground" />
-                  <div>
-                    <div className="text-foreground font-medium text-base">{city.name}</div>
-                    <div className="text-sm text-muted-foreground">{city.country}</div>
-                  </div>
+                <div>
+                  <div className="text-foreground font-medium text-base">{city.name}</div>
+                  <div className="text-sm text-muted-foreground">{city.country}</div>
                 </div>
                 <span className="text-sm text-muted-foreground">{getCurrentTimeInTimezone(city.timezone)}</span>
               </button>
