@@ -76,7 +76,7 @@ const Index = () => {
     setTimeout(() => {
       setTargetLocations(targetLocations.filter((_, i) => i !== index));
       setRemovingIndex(null);
-    }, 600);
+    }, 900);
   };
 
   const getConvertedTime = (targetTimezone: string) => {
@@ -163,14 +163,14 @@ const Index = () => {
           <div className="flex justify-between items-baseline mb-4">
             <button
               onClick={() => setLocationSelectorOpen(true)}
-              className="text-[32px] text-foreground transition-colors touch-active flex items-center gap-1"
+              className="text-[32px] text-foreground transition-all duration-150 flex items-center gap-1 active:scale-95 active:opacity-70"
             >
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              <ChevronRight className="w-5 h-5 text-muted-foreground transition-transform duration-150 active:translate-x-0.5" />
               {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
             </button>
             <button
               onClick={() => setTimeSelectorOpen(true)}
-              className="flex items-center gap-1 transition-colors touch-active"
+              className="flex items-center gap-1 transition-all duration-150 active:scale-95 active:opacity-70"
             >
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
               {isDateTimeValid ? (
@@ -261,29 +261,29 @@ const Index = () => {
       <div className="mx-6 border-t border-border/30" />
 
       {/* Add/Remove Buttons */}
-      <div className={`px-6 py-3 bg-background flex items-center transition-all duration-[600ms] ease-out ${targetLocations.length > 0 ? 'justify-between' : 'justify-center'}`}>
+      <div className={`px-6 py-3 bg-background flex items-center transition-all duration-[900ms] ease-out ${targetLocations.length > 0 ? 'justify-between' : 'justify-center'}`}>
         {/* Remove button - only visible when there are cities */}
         <div 
-          className={`transition-all duration-[600ms] ease-out ${targetLocations.length > 0 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12 absolute pointer-events-none'}`}
+          className={`transition-all duration-[900ms] ease-out ${targetLocations.length > 0 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12 absolute pointer-events-none'}`}
         >
           <button
             className="text-primary text-[17px] font-normal flex items-center gap-2 relative h-6 min-w-[90px]"
             onClick={() => setRemoveMode(!removeMode)}
           >
             {/* Remove state */}
-            <div className={`flex items-center gap-2 transition-all duration-[600ms] ease-out absolute left-0 ${removeMode ? 'opacity-0 -translate-x-4' : 'opacity-100 translate-x-0'}`}>
+            <div className={`flex items-center gap-2 transition-all duration-[900ms] ease-out absolute left-0 ${removeMode ? 'opacity-0 -translate-x-4' : 'opacity-100 translate-x-0'}`}>
               <Minus className="w-5 h-5" />
               <span>Remove</span>
             </div>
             {/* Done state */}
-            <div className={`flex items-center gap-2 transition-all duration-[600ms] ease-out absolute left-0 ${removeMode ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
+            <div className={`flex items-center gap-2 transition-all duration-[900ms] ease-out absolute left-0 ${removeMode ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
               <span>Done</span>
             </div>
           </button>
         </div>
 
         <button
-          className={`text-primary text-[17px] font-normal flex items-center gap-2 transition-all duration-[600ms] ease-out ${targetLocations.length > 0 ? 'translate-x-0' : ''}`}
+          className={`text-primary text-[17px] font-normal flex items-center gap-2 transition-all duration-[900ms] ease-out ${targetLocations.length > 0 ? 'translate-x-0' : ''}`}
           onClick={() => {
             setAddCitySelectorOpen(true);
             if (removeMode) setRemoveMode(false);
@@ -340,7 +340,7 @@ const Index = () => {
           return (
             <div
               key={location.name}
-              className={`mx-4 mb-3 city-card p-4 transition-all duration-[600ms] ease-out ${
+              className={`mx-4 mb-3 city-card p-4 transition-all duration-[900ms] ease-out ${
                 removingIndex === index 
                   ? 'opacity-0 scale-95 translate-x-4' 
                   : 'opacity-100 scale-100 translate-x-0'
