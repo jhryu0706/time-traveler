@@ -253,6 +253,9 @@ const Index = () => {
         onOpenChange={setTimeSelectorOpen}
       />
 
+      {/* Divider */}
+      <div className="mx-6 h-px bg-border/30" />
+
       {/* Add/Remove Buttons */}
       <div
         className={`px-6 py-3 bg-background flex items-center transition-all duration-1200 ${targetLocations.length > 0 ? "justify-between" : "justify-center"}`}
