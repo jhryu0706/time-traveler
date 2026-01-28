@@ -254,7 +254,7 @@ const Index = () => {
       />
 
       {/* Divider */}
-      <div className="mx-6 h-px bg-border/30" />
+      <div className="mx-6 my-4 h-px bg-border/30" />
 
       {/* Add/Remove Buttons */}
       <div
