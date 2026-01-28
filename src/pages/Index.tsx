@@ -25,6 +25,8 @@ const Index = () => {
   const [showTimeChoiceDialog, setShowTimeChoiceDialog] = useState(false);
   const [removeMode, setRemoveMode] = useState(false);
   const [addCitySelectorOpen, setAddCitySelectorOpen] = useState(false);
+  const [isTransitioningToEmpty, setIsTransitioningToEmpty] = useState(false);
+  const [isTransitioningToFilled, setIsTransitioningToFilled] = useState(false);
 
   const isDateTimeValid = isValidDateTime(dateTime);
 
@@ -66,12 +68,36 @@ const Index = () => {
 
   const addTargetLocation = (location: Location) => {
     if (!targetLocations.find((l) => l.name === location.name)) {
-      setTargetLocations([...targetLocations, location]);
+      const isFirstCity = targetLocations.length === 0;
+      if (isFirstCity) {
+        // Fade out centered button, then show filled state
+        setIsTransitioningToFilled(true);
+        setTimeout(() => {
+          setTargetLocations([...targetLocations, location]);
+          setIsTransitioningToFilled(false);
+        }, 200);
+      } else {
+        setTargetLocations([...targetLocations, location]);
+      }
     }
   };
 
   const removeTargetLocation = (index: number) => {
-    setTargetLocations(targetLocations.filter((_, i) => i !== index));
+    const newLocations = targetLocations.filter((_, i) => i !== index);
+    
+    if (newLocations.length === 0 && targetLocations.length > 0) {
+      // Two-phase: fade out both buttons, then fade in centered
+      setIsTransitioningToEmpty(true);
+      setTimeout(() => {
+        setTargetLocations(newLocations);
+        setRemoveMode(false);
+        setTimeout(() => {
+          setIsTransitioningToEmpty(false);
+        }, 50); // Small delay before fade-in
+      }, 200);
+    } else {
+      setTargetLocations(newLocations);
+    }
   };
 
   const getConvertedTime = (targetTimezone: string) => {
@@ -258,11 +284,17 @@ const Index = () => {
 
       {/* Add/Remove Buttons */}
       <div
-        className={`px-6 py-3 bg-background flex items-center transition-all duration-1200 ${targetLocations.length > 0 ? "justify-between" : "justify-center"}`}
+        className={`px-6 py-3 bg-background flex items-center transition-all duration-300 ${
+          targetLocations.length > 0 ? "justify-between" : "justify-center"
+        }`}
       >
         {/* Remove button - only visible when there are cities */}
         <div
-          className={`transition-all duration-300 ${targetLocations.length > 0 ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 absolute pointer-events-none"}`}
+          className={`transition-opacity duration-200 ${
+            targetLocations.length > 0 && !isTransitioningToEmpty
+              ? "opacity-100"
+              : "opacity-0 pointer-events-none"
+          } ${targetLocations.length === 0 ? "absolute" : ""}`}
         >
           <button
             className="text-primary text-[17px] font-bold flex items-center gap-2"
@@ -283,7 +315,9 @@ const Index = () => {
         </div>
 
         <button
-          className={`text-primary text-[17px] font-bold flex items-center gap-2 transition-all duration-1200 ${targetLocations.length > 0 ? "translate-x-0" : ""}`}
+          className={`text-primary text-[17px] font-bold flex items-center gap-2 transition-opacity duration-200 ${
+            isTransitioningToEmpty || isTransitioningToFilled ? "opacity-0" : "opacity-100"
+          }`}
           onClick={() => {
             setAddCitySelectorOpen(true);
             if (removeMode) setRemoveMode(false);
