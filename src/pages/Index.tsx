@@ -146,7 +146,7 @@ const Index = () => {
       </div>
 
       {/* Header */}
-      <div className="px-6 pb-6">
+      <div className="px-6">
         {/* Secondary header */}
         <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
           <span>{formatDate(currentTime)}</span>
