@@ -160,13 +160,14 @@ const Index = () => {
               onClick={() => setLocationSelectorOpen(true)}
               className="text-[32px] text-foreground transition-colors touch-active flex items-center gap-1"
             >
-              {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
             </button>
             <button
               onClick={() => setTimeSelectorOpen(true)}
               className="flex items-center gap-1 transition-colors touch-active"
             >
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
               {isDateTimeValid ? (
                 <>
                   <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
@@ -175,7 +176,6 @@ const Index = () => {
                   <span className="text-[13px] text-muted-foreground">
                     {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[1] || time12.ampm}
                   </span>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </>
               ) : (
                 <>
@@ -183,7 +183,6 @@ const Index = () => {
                     {time12.hours}:{time12.minutes}
                   </span>
                   <span className="text-[13px] text-muted-foreground">{time12.ampm}</span>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </>
               )}
             </button>
@@ -254,20 +253,17 @@ const Index = () => {
       />
 
       {/* Add/Remove Buttons */}
-      <div className={`px-6 py-3 bg-background flex items-center transition-all duration-300 ${targetLocations.length > 0 ? 'justify-between' : 'justify-center'}`}>
+      <div className={`px-6 py-3 bg-background flex items-center transition-all duration-500 ease-out ${targetLocations.length > 0 ? 'justify-between' : 'justify-center'}`}>
         {/* Remove button - only visible when there are cities */}
         <div 
-          className={`transition-all duration-300 ${targetLocations.length > 0 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute pointer-events-none'}`}
+          className={`transition-all duration-500 ease-out ${targetLocations.length > 0 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 absolute pointer-events-none'}`}
         >
           <button
-            className="text-primary text-[17px] font-bold flex items-center gap-2"
+            className="text-primary text-[17px] font-normal flex items-center gap-2"
             onClick={() => setRemoveMode(!removeMode)}
           >
             {removeMode ? (
-              <>
-                <X className="w-5 h-5" />
-                <span>Done</span>
-              </>
+              <span>Done</span>
             ) : (
               <>
                 <Minus className="w-5 h-5" />
@@ -278,7 +274,7 @@ const Index = () => {
         </div>
 
         <button
-          className={`text-primary text-[17px] font-bold flex items-center gap-2 transition-all duration-300 ${targetLocations.length > 0 ? 'translate-x-0' : ''}`}
+          className={`text-primary text-[17px] font-normal flex items-center gap-2 transition-all duration-500 ease-out ${targetLocations.length > 0 ? 'translate-x-0' : ''}`}
           onClick={() => {
             setAddCitySelectorOpen(true);
             if (removeMode) setRemoveMode(false);
@@ -335,10 +331,11 @@ const Index = () => {
           return (
             <div
               key={location.name}
-              className="mx-4 mb-3 city-card p-4 animate-fade-in"
+              className={`mx-4 mb-3 city-card p-4 animate-fade-in transition-all duration-200 ${removeMode ? 'cursor-pointer ring-2 ring-destructive/50 bg-destructive/5 active:bg-destructive/10' : ''}`}
               style={{
-                background: `linear-gradient(135deg, hsl(0 0% 8%) 0%, hsl(0 0% 8%) 100%)`,
+                background: removeMode ? undefined : `linear-gradient(135deg, hsl(0 0% 8%) 0%, hsl(0 0% 8%) 100%)`,
               }}
+              onClick={() => removeMode && removeTargetLocation(index)}
             >
               {/* Secondary header */}
               <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
@@ -349,11 +346,6 @@ const Index = () => {
               {/* Main content - Time and City */}
               <div className="flex justify-between items-baseline">
                 <div className="flex items-center gap-3">
-                  {removeMode && (
-                    <button onClick={() => removeTargetLocation(index)} className="text-destructive animate-fade-in">
-                      <X className="w-5 h-5" />
-                    </button>
-                  )}
                   <span className="text-[32px] text-foreground">{location.name.split(",")[0]}</span>
                 </div>
 
