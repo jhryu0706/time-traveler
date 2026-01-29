@@ -14,13 +14,16 @@ interface Location {
 }
 
 const STORAGE_KEYS = {
-  SOURCE_LOCATION: 'timeConverter_sourceLocation',
-  TARGET_LOCATIONS: 'timeConverter_targetLocations',
+  SOURCE_LOCATION: "timeConverter_sourceLocation",
+  TARGET_LOCATIONS: "timeConverter_targetLocations",
 };
 
 const Index = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [storedSourceLocation, setStoredSourceLocation] = useLocalStorage<Location | null>(STORAGE_KEYS.SOURCE_LOCATION, null);
+  const [storedSourceLocation, setStoredSourceLocation] = useLocalStorage<Location | null>(
+    STORAGE_KEYS.SOURCE_LOCATION,
+    null,
+  );
   const [sourceLocation, setSourceLocation] = useState<Location | null>(storedSourceLocation);
   const [dateTime, setDateTime] = useState("");
   const [targetLocations, setTargetLocations] = useLocalStorage<Location[]>(STORAGE_KEYS.TARGET_LOCATIONS, []);
@@ -176,7 +179,7 @@ const Index = () => {
         >
           Time Converter
         </h1>
-        <div className="flex items-center justify-center gap-1 mt-2 text-[13px] text-muted-foreground/60">
+        <div className="flex items-center justify-between gap-1 mt-2 text-[13px] text-muted-foreground/60">
           <ChevronRight className="w-4 h-4" />
           <span>Click source location or time to edit.</span>
         </div>
