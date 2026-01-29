@@ -205,7 +205,7 @@ const Index = () => {
             </button>
             <button
               onClick={() => setTimeSelectorOpen(true)}
-              className="flex flex-col items-end transition-colors touch-active"
+              className="flex flex-col items-end transition-colors touch-active gap-1"
             >
               <div className="flex items-center gap-1">
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
