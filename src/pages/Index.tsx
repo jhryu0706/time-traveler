@@ -361,7 +361,7 @@ const Index = () => {
               key={location.name}
               onClick={() => removeMode && removeTargetLocation(index)}
               className={`mx-4 mb-3 city-card p-4 animate-fade-in w-[calc(100%-2rem)] text-left transition-all duration-200 ${
-                removeMode ? "border-thin border-destructive" : ""
+                removeMode ? "border border-destructive bg-destructive/5" : ""
               }`}
               style={{
                 background: `linear-gradient(135deg, hsl(0 0% 8%) 0%, hsl(0 0% 8%) 100%)`,
