@@ -168,14 +168,17 @@ const Index = () => {
 
   return (
     <div className="h-screen bg-background text-foreground flex flex-col dark">
-      {/* Header hint */}
-      <div className="px-6 pt-6 pb-4">
-        <div className="flex items-center justify-center gap-1 text-[13px] text-muted-foreground/60">
+      {/* TIME CONVERTER Logo - Always at top */}
+      <div className="px-6 pt-6 pb-10">
+        <h1
+          className="text-[13px] text-muted-foreground tracking-[0.2em] uppercase text-center"
+          style={{ fontFamily: "'Inter Tight', sans-serif" }}
+        >
+          Time Converter
+        </h1>
+        <div className="flex items-center justify-center gap-1 mt-2 text-[13px] text-muted-foreground/60">
           <ChevronRight className="w-4 h-4" />
           <span>Click source location or time to edit.</span>
-        </div>
-        <div className="text-center text-[13px] text-muted-foreground/60 mt-1">
-          SOURCE DATE: {formatDate(currentTime)}
         </div>
       </div>
 
@@ -183,8 +186,8 @@ const Index = () => {
       <div className="px-6">
         {/* Secondary header */}
         <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
-          <span>SOURCE LOC</span>
-          <span className="text-muted-foreground">SOURCE TIME</span>
+          <span>{formatDate(currentTime)}</span>
+          <span className="text-muted-foreground">Source time</span>
         </div>
 
         {/* Main content - Time and Location */}
