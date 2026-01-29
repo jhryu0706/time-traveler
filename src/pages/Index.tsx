@@ -25,8 +25,25 @@ const Index = () => {
     null,
   );
   const [sourceLocation, setSourceLocation] = useState<Location | null>(storedSourceLocation);
-  const [dateTime, setDateTime] = useState("");
+  const [manualDateTime, setManualDateTime] = useState<string | null>(null); // null = live mode
   const [targetLocations, setTargetLocations] = useLocalStorage<Location[]>(STORAGE_KEYS.TARGET_LOCATIONS, []);
+
+  // Compute current dateTime string from live clock
+  const getLiveDateTimeString = () => {
+    const now = currentTime;
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const year = now.getFullYear();
+    let hours = now.getHours();
+    const minutes = now.getMinutes();
+    const period = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${month}/${day}/${year} ${hours}:${String(minutes).padStart(2, "0")} ${period}`;
+  };
+
+  // The effective dateTime - either manual selection or live
+  const dateTime = manualDateTime ?? getLiveDateTimeString();
+  const isLiveMode = manualDateTime === null;
 
   const [locationSelectorOpen, setLocationSelectorOpen] = useState(false);
   const [timeSelectorOpen, setTimeSelectorOpen] = useState(false);
@@ -69,17 +86,7 @@ const Index = () => {
         lng: 0,
       });
     }
-
-    // Set to current local time
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    const year = now.getFullYear();
-    let hours = now.getHours();
-    const minutes = now.getMinutes();
-    const period = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12 || 12;
-    setDateTime(`${month}/${day}/${year} ${hours}:${String(minutes).padStart(2, "0")} ${period}`);
+    // Start in live mode (manualDateTime is already null)
   }, [hasRequestedLocation, storedSourceLocation]);
 
   // Update current time every second
@@ -152,6 +159,15 @@ const Index = () => {
     return `${year}/${month}/${day}`;
   };
 
+  // Get date string from dateTime (format: "MM/DD/YYYY HH:MM AM/PM")
+  const getSourceDateDisplay = () => {
+    if (!isDateTimeValid) return formatDate(currentTime);
+    // dateTime format: "MM/DD/YYYY HH:MM AM/PM"
+    const datePart = dateTime.split(" ")[0]; // "MM/DD/YYYY"
+    const [month, day, year] = datePart.split("/");
+    return `${year}/${month}/${day}`;
+  };
+
   const getTimeDifference = (targetTimezone: string) => {
     if (!sourceLocation || !isDateTimeValid) return "";
     const result = getConvertedTime(targetTimezone);
@@ -164,15 +180,8 @@ const Index = () => {
   };
 
   const handleSetLocalTime = () => {
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    const year = now.getFullYear();
-    let hours = now.getHours();
-    const minutes = now.getMinutes();
-    const period = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12 || 12;
-    setDateTime(`${month}/${day}/${year} ${hours}:${String(minutes).padStart(2, "0")} ${period}`);
+    // Reset to live mode
+    setManualDateTime(null);
     setShowTimeChoiceDialog(false);
   };
 
@@ -244,7 +253,7 @@ const Index = () => {
                   </>
                 )}
               </div>
-              <span className="text-[13px] text-muted-foreground">{formatDate(currentTime)}</span>
+              <span className="text-[13px] text-muted-foreground">{getSourceDateDisplay()}</span>
             </button>
           </div>
         ) : (
@@ -306,7 +315,7 @@ const Index = () => {
       {/* Time Selector Sheet */}
       <DateTimeInput
         value={dateTime}
-        onChange={setDateTime}
+        onChange={(newDateTime) => setManualDateTime(newDateTime)}
         isValid={isDateTimeValid || dateTime.length === 0}
         isOpen={timeSelectorOpen}
         onOpenChange={setTimeSelectorOpen}
