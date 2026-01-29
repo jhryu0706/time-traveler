@@ -301,7 +301,7 @@ const Index = () => {
       {/* Add/Remove Buttons */}
       <div
         className={`px-6 py-3 bg-background flex items-center transition-all duration-300 ${
-          targetLocations.length > 0 ? "justify-between" : "justify-center"
+          removeMode ? "justify-start" : targetLocations.length > 0 ? "justify-between" : "justify-center"
         }`}
       >
         {/* Remove button - visible when there are cities OR in remove mode (to allow Done) */}
