@@ -97,26 +97,35 @@ const Index = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const addTargetLocations = (locations: Location[]) => {
-    const newLocations = locations.filter(
-      (loc) => !targetLocations.find((l) => l.name === loc.name)
-    );
-    if (newLocations.length === 0) return;
-
-    const isFirstCity = targetLocations.length === 0;
-    if (isFirstCity) {
-      setIsTransitioningToFilled(true);
-      setTimeout(() => {
-        setTargetLocations([...targetLocations, ...newLocations]);
-        setIsTransitioningToFilled(false);
-      }, 200);
+  // Toggle a location - add if not present, remove if present
+  const toggleTargetLocation = (location: Location) => {
+    const existingIndex = targetLocations.findIndex((l) => l.name === location.name);
+    
+    if (existingIndex !== -1) {
+      // Remove it
+      setTargetLocations((prev) => prev.filter((_, i) => i !== existingIndex));
     } else {
-      setTargetLocations([...targetLocations, ...newLocations]);
+      // Add it
+      const isFirstCity = targetLocations.length === 0;
+      if (isFirstCity) {
+        setIsTransitioningToFilled(true);
+        setTimeout(() => {
+          setTargetLocations((prev) => [...prev, location]);
+          setIsTransitioningToFilled(false);
+        }, 200);
+      } else {
+        setTargetLocations((prev) => [...prev, location]);
+      }
     }
   };
 
+  const addTargetLocations = (locations: Location[]) => {
+    // In multi-select mode, this is called for each toggle
+    locations.forEach((loc) => toggleTargetLocation(loc));
+  };
+
   const addTargetLocation = (location: Location) => {
-    addTargetLocations([location]);
+    toggleTargetLocation(location);
   };
 
   const removeTargetLocation = (index: number) => {
@@ -185,6 +194,19 @@ const Index = () => {
     setShowTimeChoiceDialog(false);
   };
 
+  const handleResetToLocal = () => {
+    // Reset time to live mode
+    setManualDateTime(null);
+    // Reset location to browser timezone
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    setSourceLocation({
+      name: "Local",
+      timezone: userTimezone,
+      lat: 0,
+      lng: 0,
+    });
+  };
+
   const handleSelectTime = () => {
     setShowTimeChoiceDialog(false);
     setTimeSelectorOpen(true);
@@ -209,6 +231,13 @@ const Index = () => {
           <ChevronRight className="w-4 h-4" />
           <span>Click source location or time to edit.</span>
         </div>
+        <button
+          onClick={handleResetToLocal}
+          className="flex items-center justify-center gap-1 mt-1 text-[13px] text-muted-foreground/60 w-full touch-active"
+        >
+          <ChevronRight className="w-4 h-4" />
+          <span><span className="underline">Reset</span> to local time and location</span>
+        </button>
       </div>
 
       {/* Header */}
@@ -421,14 +450,23 @@ const Index = () => {
           const isRemoving = removingIndices.has(index);
 
           return (
-            <button
+            <div
               key={location.name}
-              onClick={() => removeMode && !isRemoving && removeTargetLocation(index)}
-              className={`mx-4 mb-3 city-card p-4 w-[calc(100%-2rem)] text-left transition-all duration-200 ${
-                removeMode ? "border border-destructive bg-destructive/10" : "bg-card"
-              } ${isRemoving ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
-              disabled={!removeMode || isRemoving}
+              className={`transition-all duration-200 ${
+                isRemoving ? "opacity-0 scale-95 h-0 mb-0 overflow-hidden" : "opacity-100 scale-100"
+              }`}
+              style={{
+                transitionProperty: isRemoving ? "opacity, transform" : "opacity, transform, height, margin",
+                transitionDelay: isRemoving ? "0ms" : "0ms",
+              }}
             >
+              <button
+                onClick={() => removeMode && !isRemoving && removeTargetLocation(index)}
+                className={`mx-4 mb-3 city-card p-4 w-[calc(100%-2rem)] text-left transition-colors duration-200 ${
+                  removeMode ? "border border-destructive bg-destructive/10" : "bg-card"
+                }`}
+                disabled={!removeMode || isRemoving}
+              >
               {/* Secondary header */}
               <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
                 <span>{displayDate}</span>
@@ -447,7 +485,8 @@ const Index = () => {
                 </div>
               </div>
             </button>
-          );
+          </div>
+        );
         })}
       </div>
     </div>

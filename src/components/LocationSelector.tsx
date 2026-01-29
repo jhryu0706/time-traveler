@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, MapPin, ChevronDown, X, Check } from "lucide-react";
+import { Search, MapPin, ChevronDown, X } from "lucide-react";
 import { cities, City } from "@/data/cities";
 import { getCurrentTimeInTimezone } from "@/utils/timezone";
 import { cn } from "@/lib/utils";
@@ -90,7 +90,7 @@ export default function LocationSelector({
   };
 
   const handleCitySelect = (city: City) => {
-    if (multiSelect) {
+    if (multiSelect && onMultiSelect) {
       const cityName = `${city.name}, ${city.country}`;
       const location: Location = {
         name: cityName,
@@ -100,11 +100,17 @@ export default function LocationSelector({
       };
 
       if (isCitySelected(city)) {
-        // Deselect
-        setSelectedLocations((prev) => prev.filter((loc) => loc.name !== cityName));
+        // Deselect - remove from local state and notify parent
+        setSelectedLocations((prev) => {
+          const newSelected = prev.filter((loc) => loc.name !== cityName);
+          return newSelected;
+        });
+        // Notify parent to remove this location
+        onMultiSelect([location]); // Parent will handle toggle logic
       } else {
-        // Select
+        // Select - add to local state and immediately notify parent
         setSelectedLocations((prev) => [...prev, location]);
+        onMultiSelect([location]); // Immediately add to main list
       }
     } else {
       if (city.alternateTimezones && city.alternateTimezones.length > 0) {
@@ -204,29 +210,15 @@ export default function LocationSelector({
                   disabled={isAlreadyAdded}
                   className={cn(
                     "w-full px-4 py-4 text-left flex items-center justify-between touch-active popup-item transition-all duration-200",
-                    isSelected && "bg-secondary shadow-inner",
+                    isSelected && "bg-secondary/80 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]",
                     isAlreadyAdded && "opacity-40 cursor-not-allowed"
                   )}
                 >
-                  <div className="flex items-center gap-3">
-                    {multiSelect && (
-                      <div
-                        className={cn(
-                          "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200",
-                          isSelected
-                            ? "bg-primary border-primary"
-                            : "border-muted-foreground/30"
-                        )}
-                      >
-                        {isSelected && <Check className="w-4 h-4 text-primary-foreground" />}
-                      </div>
-                    )}
-                    <div>
-                      <div className="text-foreground font-medium text-base">{city.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {city.country}
-                        {isAlreadyAdded && " (already added)"}
-                      </div>
+                  <div>
+                    <div className="text-foreground font-medium text-base">{city.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {city.country}
+                      {isAlreadyAdded && " (already added)"}
                     </div>
                   </div>
                   <span className="text-sm text-muted-foreground">{getCurrentTimeInTimezone(city.timezone)}</span>
