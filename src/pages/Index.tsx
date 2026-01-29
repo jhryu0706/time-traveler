@@ -4,6 +4,7 @@ import LocationSelector from "@/components/LocationSelector";
 import DateTimeInput from "@/components/DateTimeInput";
 import { convertDateTime, isValidDateTime, formatDayOfWeek } from "@/utils/timezone";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 interface Location {
   name: string;
@@ -12,11 +13,17 @@ interface Location {
   lng?: number;
 }
 
+const STORAGE_KEYS = {
+  SOURCE_LOCATION: 'timeConverter_sourceLocation',
+  TARGET_LOCATIONS: 'timeConverter_targetLocations',
+};
+
 const Index = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [sourceLocation, setSourceLocation] = useState<Location | null>(null);
+  const [storedSourceLocation, setStoredSourceLocation] = useLocalStorage<Location | null>(STORAGE_KEYS.SOURCE_LOCATION, null);
+  const [sourceLocation, setSourceLocation] = useState<Location | null>(storedSourceLocation);
   const [dateTime, setDateTime] = useState("");
-  const [targetLocations, setTargetLocations] = useState<Location[]>([]);
+  const [targetLocations, setTargetLocations] = useLocalStorage<Location[]>(STORAGE_KEYS.TARGET_LOCATIONS, []);
 
   const [locationSelectorOpen, setLocationSelectorOpen] = useState(false);
   const [timeSelectorOpen, setTimeSelectorOpen] = useState(false);
@@ -30,21 +37,33 @@ const Index = () => {
 
   const isDateTimeValid = isValidDateTime(dateTime);
 
-  // Request user location on mount
+  // Sync sourceLocation to localStorage when it changes
+  useEffect(() => {
+    if (sourceLocation) {
+      setStoredSourceLocation(sourceLocation);
+    }
+  }, [sourceLocation, setStoredSourceLocation]);
+
+  // Request user location on mount (only if no stored location)
   useEffect(() => {
     if (hasRequestedLocation) return;
     setHasRequestedLocation(true);
 
-    // Get browser timezone without geolocation
-    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const cityFromTimezone = "Local";
+    // If we have a stored source location, use it
+    if (storedSourceLocation) {
+      setSourceLocation(storedSourceLocation);
+    } else {
+      // Get browser timezone without geolocation
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const cityFromTimezone = "Local";
 
-    setSourceLocation({
-      name: cityFromTimezone,
-      timezone: userTimezone,
-      lat: 0, // placeholder coords since we're not using geolocation
-      lng: 0,
-    });
+      setSourceLocation({
+        name: cityFromTimezone,
+        timezone: userTimezone,
+        lat: 0,
+        lng: 0,
+      });
+    }
 
     // Set to current local time
     const now = new Date();
@@ -56,7 +75,7 @@ const Index = () => {
     const period = hours >= 12 ? "PM" : "AM";
     hours = hours % 12 || 12;
     setDateTime(`${month}/${day}/${year} ${hours}:${String(minutes).padStart(2, "0")} ${period}`);
-  }, [hasRequestedLocation]);
+  }, [hasRequestedLocation, storedSourceLocation]);
 
   // Update current time every second
   useEffect(() => {
