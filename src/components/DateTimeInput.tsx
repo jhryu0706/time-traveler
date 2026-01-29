@@ -65,6 +65,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       const currentHour = now.getHours();
       const currentYear = now.getFullYear();
 
+      // Always reset baseYear to current year when opening
       setBaseYear(currentYear);
       setMonth(now.getMonth());
       setDay(now.getDate());
