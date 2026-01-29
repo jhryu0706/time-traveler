@@ -38,6 +38,7 @@ const Index = () => {
   const [isTransitioningToEmpty, setIsTransitioningToEmpty] = useState(false);
   const [isTransitioningToFilled, setIsTransitioningToFilled] = useState(false);
   const [isExitingRemoveMode, setIsExitingRemoveMode] = useState(false);
+  const [removingIndices, setRemovingIndices] = useState<Set<number>>(new Set());
 
   const isDateTimeValid = isValidDateTime(dateTime);
 
@@ -89,26 +90,41 @@ const Index = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const addTargetLocation = (location: Location) => {
-    if (!targetLocations.find((l) => l.name === location.name)) {
-      const isFirstCity = targetLocations.length === 0;
-      if (isFirstCity) {
-        // Fade out centered button, then show filled state
-        setIsTransitioningToFilled(true);
-        setTimeout(() => {
-          setTargetLocations([...targetLocations, location]);
-          setIsTransitioningToFilled(false);
-        }, 200);
-      } else {
-        setTargetLocations([...targetLocations, location]);
-      }
+  const addTargetLocations = (locations: Location[]) => {
+    const newLocations = locations.filter(
+      (loc) => !targetLocations.find((l) => l.name === loc.name)
+    );
+    if (newLocations.length === 0) return;
+
+    const isFirstCity = targetLocations.length === 0;
+    if (isFirstCity) {
+      setIsTransitioningToFilled(true);
+      setTimeout(() => {
+        setTargetLocations([...targetLocations, ...newLocations]);
+        setIsTransitioningToFilled(false);
+      }, 200);
+    } else {
+      setTargetLocations([...targetLocations, ...newLocations]);
     }
   };
 
+  const addTargetLocation = (location: Location) => {
+    addTargetLocations([location]);
+  };
+
   const removeTargetLocation = (index: number) => {
-    const newLocations = targetLocations.filter((_, i) => i !== index);
-    setTargetLocations(newLocations);
-    // Stay in remove mode even when empty - user must click Done to exit
+    // Add to removing set to trigger fade out animation
+    setRemovingIndices((prev) => new Set(prev).add(index));
+    
+    // After animation, actually remove
+    setTimeout(() => {
+      setTargetLocations((prev) => prev.filter((_, i) => i !== index));
+      setRemovingIndices((prev) => {
+        const next = new Set(prev);
+        next.delete(index);
+        return next;
+      });
+    }, 200);
   };
 
   const getConvertedTime = (targetTimezone: string) => {
@@ -354,14 +370,15 @@ const Index = () => {
       <LocationSelector
         label="Add Location"
         value={null}
-        onChange={(loc) => {
-          if (loc) {
-            addTargetLocation(loc);
-            setAddCitySelectorOpen(false);
-          }
-        }}
+        onChange={() => {}}
         isOpen={addCitySelectorOpen}
         onOpenChange={setAddCitySelectorOpen}
+        multiSelect={true}
+        onMultiSelect={(locations) => {
+          addTargetLocations(locations);
+          setAddCitySelectorOpen(false);
+        }}
+        existingLocations={targetLocations}
       />
 
       {/* Cities List */}
@@ -392,18 +409,16 @@ const Index = () => {
               displayTime = { hours, minutes, ampm };
             }
           }
+          const isRemoving = removingIndices.has(index);
 
           return (
             <button
               key={location.name}
-              onClick={() => removeMode && removeTargetLocation(index)}
-              className={`mx-4 mb-3 city-card p-4 animate-fade-in w-[calc(100%-2rem)] text-left transition-all duration-200 ${
-                removeMode ? "border border-destructive bg-destructive/5" : ""
-              }`}
-              style={{
-                background: `linear-gradient(135deg, hsl(0 0% 8%) 0%, hsl(0 0% 8%) 100%)`,
-              }}
-              disabled={!removeMode}
+              onClick={() => removeMode && !isRemoving && removeTargetLocation(index)}
+              className={`mx-4 mb-3 city-card p-4 w-[calc(100%-2rem)] text-left transition-all duration-200 ${
+                removeMode ? "border border-destructive bg-destructive/10" : "bg-card"
+              } ${isRemoving ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
+              disabled={!removeMode || isRemoving}
             >
               {/* Secondary header */}
               <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">

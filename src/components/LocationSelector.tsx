@@ -1,16 +1,21 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, MapPin, ChevronDown, X } from "lucide-react";
+import { Search, MapPin, ChevronDown, X, Check } from "lucide-react";
 import { cities, City } from "@/data/cities";
 import { getCurrentTimeInTimezone } from "@/utils/timezone";
 import { cn } from "@/lib/utils";
 import TimezoneSelector from "./TimezoneSelector";
 
+type Location = { name: string; timezone: string; lat?: number; lng?: number };
+
 interface LocationSelectorProps {
   label: string;
-  value: { name: string; timezone: string; lat?: number; lng?: number } | null;
-  onChange: (location: { name: string; timezone: string; lat?: number; lng?: number } | null) => void;
+  value: Location | null;
+  onChange: (location: Location | null) => void;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  multiSelect?: boolean;
+  onMultiSelect?: (locations: Location[]) => void;
+  existingLocations?: Location[];
 }
 
 export default function LocationSelector({
@@ -19,6 +24,9 @@ export default function LocationSelector({
   onChange,
   isOpen: externalOpen,
   onOpenChange,
+  multiSelect = false,
+  onMultiSelect,
+  existingLocations = [],
 }: LocationSelectorProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = externalOpen ?? internalOpen;
@@ -34,8 +42,16 @@ export default function LocationSelector({
   const [showTimezoneSelector, setShowTimezoneSelector] = useState(false);
   const [multipleTimezones, setMultipleTimezones] = useState<string[]>([]);
   const [pendingCity, setPendingCity] = useState<City | null>(null);
+  const [selectedLocations, setSelectedLocations] = useState<Location[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Reset selected locations when sheet opens
+  useEffect(() => {
+    if (isOpen && multiSelect) {
+      setSelectedLocations([]);
+    }
+  }, [isOpen, multiSelect]);
 
   const filteredCities = React.useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
@@ -63,22 +79,59 @@ export default function LocationSelector({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const isCitySelected = (city: City) => {
+    const cityName = `${city.name}, ${city.country}`;
+    return selectedLocations.some((loc) => loc.name === cityName);
+  };
+
+  const isCityAlreadyAdded = (city: City) => {
+    const cityName = `${city.name}, ${city.country}`;
+    return existingLocations.some((loc) => loc.name === cityName);
+  };
+
   const handleCitySelect = (city: City) => {
-    if (city.alternateTimezones && city.alternateTimezones.length > 0) {
-      setMultipleTimezones([city.timezone, ...city.alternateTimezones]);
-      setPendingCity(city);
-      setShowTimezoneSelector(true);
-      setIsOpen(false);
-    } else {
-      onChange({
-        name: `${city.name}, ${city.country}`,
+    if (multiSelect) {
+      const cityName = `${city.name}, ${city.country}`;
+      const location: Location = {
+        name: cityName,
         timezone: city.timezone,
         lat: city.lat,
         lng: city.lng,
-      });
-      setIsOpen(false);
-      setSearchQuery("");
+      };
+
+      if (isCitySelected(city)) {
+        // Deselect
+        setSelectedLocations((prev) => prev.filter((loc) => loc.name !== cityName));
+      } else {
+        // Select
+        setSelectedLocations((prev) => [...prev, location]);
+      }
+    } else {
+      if (city.alternateTimezones && city.alternateTimezones.length > 0) {
+        setMultipleTimezones([city.timezone, ...city.alternateTimezones]);
+        setPendingCity(city);
+        setShowTimezoneSelector(true);
+        setIsOpen(false);
+      } else {
+        onChange({
+          name: `${city.name}, ${city.country}`,
+          timezone: city.timezone,
+          lat: city.lat,
+          lng: city.lng,
+        });
+        setIsOpen(false);
+        setSearchQuery("");
+      }
     }
+  };
+
+  const handleDone = () => {
+    if (multiSelect && onMultiSelect) {
+      onMultiSelect(selectedLocations);
+    }
+    setIsOpen(false);
+    setSearchQuery("");
+    setSelectedLocations([]);
   };
 
   const handleTimezoneSelect = (timezone: string) => {
@@ -111,7 +164,7 @@ export default function LocationSelector({
 
         {/* Bottom Sheet - Fixed 60% height */}
         <div className="fixed inset-x-0 bottom-0 popup-container border-t rounded-t-2xl z-50 animate-slide-up h-[60vh] flex flex-col">
-          {/* Search Header with X button outside */}
+          {/* Search Header with Done button for multi-select */}
           <div className="px-4 py-3 border-b border-border flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-secondary/50 border border-border rounded-xl">
               <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
@@ -125,25 +178,61 @@ export default function LocationSelector({
                 autoFocus
               />
             </div>
-            <button onClick={() => setIsOpen(false)} className="p-2 touch-active">
-              <X className="w-5 h-5 text-muted-foreground" />
-            </button>
+            {multiSelect ? (
+              <button
+                onClick={handleDone}
+                className="px-4 py-2 text-primary font-bold text-[17px] touch-active"
+              >
+                Done
+              </button>
+            ) : (
+              <button onClick={() => setIsOpen(false)} className="p-2 touch-active">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            )}
           </div>
 
           <div className="overflow-y-auto flex-1 hide-scrollbar">
-            {filteredCities.map((city, index) => (
-              <button
-                key={`${city.name}-${city.country}-${index}`}
-                onClick={() => handleCitySelect(city)}
-                className="w-full px-4 py-4 text-left flex items-center justify-between touch-active popup-item"
-              >
-                <div>
-                  <div className="text-foreground font-medium text-base">{city.name}</div>
-                  <div className="text-sm text-muted-foreground">{city.country}</div>
-                </div>
-                <span className="text-sm text-muted-foreground">{getCurrentTimeInTimezone(city.timezone)}</span>
-              </button>
-            ))}
+            {filteredCities.map((city, index) => {
+              const isSelected = isCitySelected(city);
+              const isAlreadyAdded = isCityAlreadyAdded(city);
+
+              return (
+                <button
+                  key={`${city.name}-${city.country}-${index}`}
+                  onClick={() => !isAlreadyAdded && handleCitySelect(city)}
+                  disabled={isAlreadyAdded}
+                  className={cn(
+                    "w-full px-4 py-4 text-left flex items-center justify-between touch-active popup-item transition-all duration-200",
+                    isSelected && "bg-secondary shadow-inner",
+                    isAlreadyAdded && "opacity-40 cursor-not-allowed"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    {multiSelect && (
+                      <div
+                        className={cn(
+                          "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200",
+                          isSelected
+                            ? "bg-primary border-primary"
+                            : "border-muted-foreground/30"
+                        )}
+                      >
+                        {isSelected && <Check className="w-4 h-4 text-primary-foreground" />}
+                      </div>
+                    )}
+                    <div>
+                      <div className="text-foreground font-medium text-base">{city.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {city.country}
+                        {isAlreadyAdded && " (already added)"}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-sm text-muted-foreground">{getCurrentTimeInTimezone(city.timezone)}</span>
+                </button>
+              );
+            })}
             {filteredCities.length === 0 && searchQuery.length > 0 && (
               <div className="p-4 text-center text-muted-foreground">No cities found</div>
             )}
