@@ -304,11 +304,11 @@ const Index = () => {
           targetLocations.length > 0 ? "justify-between" : "justify-center"
         }`}
       >
-        {/* Remove button - only visible when there are cities */}
+        {/* Remove button - visible when there are cities OR in remove mode (to allow Done) */}
         <div
           className={`transition-opacity duration-200 ${
-            targetLocations.length > 0 && !isTransitioningToEmpty ? "opacity-100" : "opacity-0 pointer-events-none"
-          } ${targetLocations.length === 0 ? "absolute" : ""}`}
+            (targetLocations.length > 0 || removeMode) && !isTransitioningToEmpty ? "opacity-100" : "opacity-0 pointer-events-none"
+          } ${targetLocations.length === 0 && !removeMode ? "absolute" : ""}`}
         >
           <button
             className="text-primary text-[17px] font-bold flex items-center gap-2"
