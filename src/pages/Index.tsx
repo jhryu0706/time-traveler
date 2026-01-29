@@ -282,9 +282,7 @@ const Index = () => {
         {/* Remove button - only visible when there are cities */}
         <div
           className={`transition-opacity duration-200 ${
-            targetLocations.length > 0 && !isTransitioningToEmpty
-              ? "opacity-100"
-              : "opacity-0 pointer-events-none"
+            targetLocations.length > 0 && !isTransitioningToEmpty ? "opacity-100" : "opacity-0 pointer-events-none"
           } ${targetLocations.length === 0 ? "absolute" : ""}`}
         >
           <button
@@ -363,7 +361,7 @@ const Index = () => {
               key={location.name}
               onClick={() => removeMode && removeTargetLocation(index)}
               className={`mx-4 mb-3 city-card p-4 animate-fade-in w-[calc(100%-2rem)] text-left transition-all duration-200 ${
-                removeMode ? "border-2 border-destructive" : ""
+                removeMode ? "border-thin border-destructive" : ""
               }`}
               style={{
                 background: `linear-gradient(135deg, hsl(0 0% 8%) 0%, hsl(0 0% 8%) 100%)`,
