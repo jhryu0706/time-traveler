@@ -37,6 +37,7 @@ const Index = () => {
   const [addCitySelectorOpen, setAddCitySelectorOpen] = useState(false);
   const [isTransitioningToEmpty, setIsTransitioningToEmpty] = useState(false);
   const [isTransitioningToFilled, setIsTransitioningToFilled] = useState(false);
+  const [isExitingRemoveMode, setIsExitingRemoveMode] = useState(false);
 
   const isDateTimeValid = isValidDateTime(dateTime);
 
@@ -301,18 +302,29 @@ const Index = () => {
       {/* Add/Remove Buttons */}
       <div
         className={`px-6 py-3 bg-background flex items-center transition-all duration-300 ${
-          removeMode ? "justify-start" : targetLocations.length > 0 ? "justify-between" : "justify-center"
+          removeMode || isExitingRemoveMode ? "justify-start" : targetLocations.length > 0 ? "justify-between" : "justify-center"
         }`}
       >
-        {/* Remove button - visible when there are cities OR in remove mode (to allow Done) */}
+        {/* Remove/Done button - visible when there are cities OR in remove mode */}
         <div
           className={`transition-opacity duration-200 ${
-            (targetLocations.length > 0 || removeMode) && !isTransitioningToEmpty ? "opacity-100" : "opacity-0 pointer-events-none"
+            ((targetLocations.length > 0 || removeMode) && !isTransitioningToEmpty && !isExitingRemoveMode) ? "opacity-100" : "opacity-0 pointer-events-none"
           } ${targetLocations.length === 0 && !removeMode ? "absolute" : ""}`}
         >
           <button
             className="text-primary text-[17px] font-bold flex items-center gap-2"
-            onClick={() => setRemoveMode(!removeMode)}
+            onClick={() => {
+              if (removeMode) {
+                // Exiting remove mode - fade out Done first, then fade in Add City
+                setIsExitingRemoveMode(true);
+                setTimeout(() => {
+                  setRemoveMode(false);
+                  setIsExitingRemoveMode(false);
+                }, 200);
+              } else {
+                setRemoveMode(true);
+              }
+            }}
           >
             {removeMode ? (
               <span>Done</span>
@@ -328,7 +340,7 @@ const Index = () => {
         {!removeMode && (
           <button
             className={`text-primary text-[17px] font-bold flex items-center gap-2 transition-opacity duration-200 ${
-              isTransitioningToEmpty || isTransitioningToFilled ? "opacity-0" : "opacity-100"
+              isTransitioningToEmpty || isTransitioningToFilled || isExitingRemoveMode ? "opacity-0" : "opacity-100"
             }`}
             onClick={() => setAddCitySelectorOpen(true)}
           >
