@@ -185,17 +185,14 @@ const Index = () => {
       {/* Header */}
       <div className="px-6">
         {/* Secondary header */}
-        <div className="flex justify-between items-start text-[13px] text-muted-foreground mb-2">
+        <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
           <span>Source Location</span>
-          <div className="text-right">
-            <span className="text-muted-foreground">Source Time</span>
-            <div className="text-muted-foreground">{formatDate(currentTime)}</div>
-          </div>
+          <span className="text-muted-foreground">Source Time</span>
         </div>
 
         {/* Main content - Time and Location */}
         {!missingDateorLoc ? (
-          <div className="flex justify-between items-baseline mb-4">
+          <div className="flex justify-between items-start mb-4">
             <button
               onClick={() => setLocationSelectorOpen(true)}
               className="text-[32px] text-foreground transition-colors touch-active flex items-center gap-1"
@@ -205,26 +202,29 @@ const Index = () => {
             </button>
             <button
               onClick={() => setTimeSelectorOpen(true)}
-              className="flex items-center gap-1 transition-colors touch-active"
+              className="flex flex-col items-end transition-colors touch-active"
             >
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              {isDateTimeValid ? (
-                <>
-                  <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
-                    {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[0] || time12.hours + ":" + time12.minutes}
-                  </span>
-                  <span className="text-[13px] text-muted-foreground">
-                    {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[1] || time12.ampm}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="text-[32px] leading-none font-light tabular-nums text-primary">
-                    {time12.hours}:{time12.minutes}
-                  </span>
-                  <span className="text-[13px] text-muted-foreground">{time12.ampm}</span>
-                </>
-              )}
+              <div className="flex items-center gap-1">
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                {isDateTimeValid ? (
+                  <>
+                    <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
+                      {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[0] || time12.hours + ":" + time12.minutes}
+                    </span>
+                    <span className="text-[13px] text-muted-foreground">
+                      {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[1] || time12.ampm}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[32px] leading-none font-light tabular-nums text-primary">
+                      {time12.hours}:{time12.minutes}
+                    </span>
+                    <span className="text-[13px] text-muted-foreground">{time12.ampm}</span>
+                  </>
+                )}
+              </div>
+              <span className="text-[13px] text-muted-foreground">{formatDate(currentTime)}</span>
             </button>
           </div>
         ) : (
