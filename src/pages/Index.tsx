@@ -302,18 +302,17 @@ const Index = () => {
           </button>
         </div>
 
-        <button
-          className={`text-primary text-[17px] font-bold flex items-center gap-2 transition-opacity duration-200 ${
-            isTransitioningToEmpty || isTransitioningToFilled ? "opacity-0" : "opacity-100"
-          }`}
-          onClick={() => {
-            setAddCitySelectorOpen(true);
-            if (removeMode) setRemoveMode(false);
-          }}
-        >
-          <Plus className="w-5 h-5" />
-          <span>Add City</span>
-        </button>
+        {!removeMode && (
+          <button
+            className={`text-primary text-[17px] font-bold flex items-center gap-2 transition-opacity duration-200 ${
+              isTransitioningToEmpty || isTransitioningToFilled ? "opacity-0" : "opacity-100"
+            }`}
+            onClick={() => setAddCitySelectorOpen(true)}
+          >
+            <Plus className="w-5 h-5" />
+            <span>Add City</span>
+          </button>
+        )}
       </div>
 
       {/* Add City Location Selector Sheet */}
