@@ -157,6 +157,10 @@ const Index = () => {
         >
           Time Converter
         </h1>
+        <div className="flex items-center justify-center gap-1 mt-2 text-[13px] text-muted-foreground/60">
+          <ChevronRight className="w-4 h-4" />
+          <span>Click source location or time to edit.</span>
+        </div>
       </div>
 
       {/* Header */}
