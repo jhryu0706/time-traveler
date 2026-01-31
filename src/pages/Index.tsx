@@ -100,7 +100,7 @@ const Index = () => {
   // Toggle a location - add if not present, remove if present
   const toggleTargetLocation = (location: Location) => {
     const existingIndex = targetLocations.findIndex((l) => l.name === location.name);
-    
+
     if (existingIndex !== -1) {
       // Remove it
       setTargetLocations((prev) => prev.filter((_, i) => i !== existingIndex));
@@ -131,7 +131,7 @@ const Index = () => {
   const removeTargetLocation = (index: number) => {
     // Add to removing set to trigger fade out animation
     setRemovingIndices((prev) => new Set(prev).add(index));
-    
+
     // After animation, actually remove
     setTimeout(() => {
       setTargetLocations((prev) => prev.filter((_, i) => i !== index));
@@ -227,7 +227,66 @@ const Index = () => {
         >
           Time Converter
         </h1>
-        <div className="flex items-center justify-center gap-1 mt-2 text-[13px] text-muted-foreground/60">
+
+        {/* Header */}
+        <div className="px-6">
+          {/* Secondary header */}
+          <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
+            <span>Source Location</span>
+            <span className="text-muted-foreground">Source Time</span>
+          </div>
+
+          {/* Main content - Time and Location */}
+          {!missingDateorLoc ? (
+            <div className="flex justify-between items-start mb-4">
+              <button
+                onClick={() => setLocationSelectorOpen(true)}
+                className="text-[32px] text-foreground transition-colors touch-active flex items-center gap-1"
+              >
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
+              </button>
+              <button
+                onClick={() => setTimeSelectorOpen(true)}
+                className="flex flex-col items-end transition-colors touch-active gap-1"
+              >
+                <div className="flex items-center gap-1">
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  {isDateTimeValid ? (
+                    <>
+                      <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
+                        {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[0] ||
+                          time12.hours + ":" + time12.minutes}
+                      </span>
+                      <span className="text-[13px] text-muted-foreground">
+                        {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[1] || time12.ampm}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-[32px] leading-none font-light tabular-nums text-primary">
+                        {time12.hours}:{time12.minutes}
+                      </span>
+                      <span className="text-[13px] text-muted-foreground">{time12.ampm}</span>
+                    </>
+                  )}
+                </div>
+                <span className="text-[13px] text-muted-foreground">{getSourceDateDisplay()}</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 px-8">
+              <button
+                onClick={() => setLocationSelectorOpen(true)}
+                className="bg-white/10 backdrop-blur-sm text-muted-foreground px-8 py-4 rounded-2xl text-[17px] font-medium btn-press border border-white/5"
+                style={{ fontFamily: "'Inter Tight', sans-serif" }}
+              >
+                Add first location
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center justify-center mt-2 text-[13px] text-muted-foreground/60">
           <ChevronRight className="w-4 h-4" />
           <span>Click source location or time to edit.</span>
         </div>
@@ -236,66 +295,10 @@ const Index = () => {
           className="flex items-center justify-center gap-1 mt-1 text-[13px] text-muted-foreground/60 w-full touch-active"
         >
           <ChevronRight className="w-4 h-4" />
-          <span><span className="underline">Reset</span> to local time and location</span>
+          <span>
+            <span className="underline">Reset</span> to local time and location
+          </span>
         </button>
-      </div>
-
-      {/* Header */}
-      <div className="px-6">
-        {/* Secondary header */}
-        <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
-          <span>Source Location</span>
-          <span className="text-muted-foreground">Source Time</span>
-        </div>
-
-        {/* Main content - Time and Location */}
-        {!missingDateorLoc ? (
-          <div className="flex justify-between items-start mb-4">
-            <button
-              onClick={() => setLocationSelectorOpen(true)}
-              className="text-[32px] text-foreground transition-colors touch-active flex items-center gap-1"
-            >
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
-            </button>
-            <button
-              onClick={() => setTimeSelectorOpen(true)}
-              className="flex flex-col items-end transition-colors touch-active gap-1"
-            >
-              <div className="flex items-center gap-1">
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                {isDateTimeValid ? (
-                  <>
-                    <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
-                      {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[0] || time12.hours + ":" + time12.minutes}
-                    </span>
-                    <span className="text-[13px] text-muted-foreground">
-                      {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[1] || time12.ampm}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-[32px] leading-none font-light tabular-nums text-primary">
-                      {time12.hours}:{time12.minutes}
-                    </span>
-                    <span className="text-[13px] text-muted-foreground">{time12.ampm}</span>
-                  </>
-                )}
-              </div>
-              <span className="text-[13px] text-muted-foreground">{getSourceDateDisplay()}</span>
-            </button>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-16 px-8">
-            <button
-              onClick={() => setLocationSelectorOpen(true)}
-              className="bg-white/10 backdrop-blur-sm text-muted-foreground px-8 py-4 rounded-2xl text-[17px] font-medium btn-press border border-white/5"
-              style={{ fontFamily: "'Inter Tight', sans-serif" }}
-            >
-              Add first location
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Time Choice Dialog - forces user to select */}
@@ -356,13 +359,19 @@ const Index = () => {
       {/* Add/Remove Buttons */}
       <div
         className={`px-6 py-3 bg-background flex items-center transition-all duration-300 ${
-          removeMode || isExitingRemoveMode ? "justify-start" : targetLocations.length > 0 ? "justify-between" : "justify-center"
+          removeMode || isExitingRemoveMode
+            ? "justify-start"
+            : targetLocations.length > 0
+              ? "justify-between"
+              : "justify-center"
         }`}
       >
         {/* Remove/Done button - visible when there are cities OR in remove mode */}
         <div
           className={`transition-opacity duration-200 ${
-            ((targetLocations.length > 0 || removeMode) && !isTransitioningToEmpty && !isExitingRemoveMode) ? "opacity-100" : "opacity-0 pointer-events-none"
+            (targetLocations.length > 0 || removeMode) && !isTransitioningToEmpty && !isExitingRemoveMode
+              ? "opacity-100"
+              : "opacity-0 pointer-events-none"
           } ${targetLocations.length === 0 && !removeMode ? "absolute" : ""}`}
         >
           <button
@@ -467,26 +476,26 @@ const Index = () => {
                 }`}
                 disabled={!removeMode || isRemoving}
               >
-              {/* Secondary header */}
-              <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
-                <span>{displayDate}</span>
-                <span>{timeDiff}</span>
-              </div>
-
-              {/* Main content - Time and City */}
-              <div className="flex justify-between items-baseline">
-                <span className="text-[32px] text-foreground">{location.name.split(",")[0]}</span>
-
-                <div className="flex items-baseline gap-2">
-                  <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
-                    {displayTime.hours}:{displayTime.minutes}
-                  </span>
-                  <span className="text-[13px] text-muted-foreground">{displayTime.ampm}</span>
+                {/* Secondary header */}
+                <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
+                  <span>{displayDate}</span>
+                  <span>{timeDiff}</span>
                 </div>
-              </div>
-            </button>
-          </div>
-        );
+
+                {/* Main content - Time and City */}
+                <div className="flex justify-between items-baseline">
+                  <span className="text-[32px] text-foreground">{location.name.split(",")[0]}</span>
+
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
+                      {displayTime.hours}:{displayTime.minutes}
+                    </span>
+                    <span className="text-[13px] text-muted-foreground">{displayTime.ampm}</span>
+                  </div>
+                </div>
+              </button>
+            </div>
+          );
         })}
       </div>
     </div>
