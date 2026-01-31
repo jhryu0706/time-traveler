@@ -23,13 +23,18 @@ const periods = ['AM', 'PM'];
 
 const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
   function DateTimeInput({ value, onChange, isValid, isOpen: externalOpen, onOpenChange }, ref) {
+    // Always compute current year fresh
+    const getCurrentYear = () => new Date().getFullYear();
+    
     // Initialize time from current time
     const now = new Date();
     const currentHour = now.getHours();
-    const [baseYear, setBaseYear] = useState(() => now.getFullYear());
+    const currentYear = getCurrentYear();
+    
+    const [baseYear, setBaseYear] = useState(currentYear);
     const [month, setMonth] = useState(now.getMonth());
     const [day, setDay] = useState(now.getDate());
-    const [year, setYear] = useState(now.getFullYear());
+    const [year, setYear] = useState(currentYear);
     const [hour, setHour] = useState(currentHour % 12 || 12);
     const [minute, setMinute] = useState(now.getMinutes());
     const [period, setPeriod] = useState<'AM' | 'PM'>(currentHour >= 12 ? 'PM' : 'AM');
@@ -140,8 +145,26 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       return format(date, 'EEE');
     };
 
+    const getRelativeDateLabel = () => {
+      const selectedDate = new Date(year, month, day);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      selectedDate.setHours(0, 0, 0, 0);
+      
+      const diffTime = selectedDate.getTime() - today.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) return 'Today';
+      if (diffDays === 1) return 'Tomorrow';
+      if (diffDays === -1) return 'Yesterday';
+      return null;
+    };
+
     const displayTime = `${hour}:${String(minute).padStart(2, '0')} ${period}`;
-    const displayDate = `${String(month + 1).padStart(2, '0')}/${String(day).padStart(2, '0')}/${year} (${getDayOfWeek()})`;
+    const relativeLabel = getRelativeDateLabel();
+    const displayDate = relativeLabel 
+      ? `${relativeLabel} (${getDayOfWeek()})`
+      : `${String(month + 1).padStart(2, '0')}/${String(day).padStart(2, '0')}/${year} (${getDayOfWeek()})`;
 
     const closeSheet = () => {
       if (onOpenChange) {
