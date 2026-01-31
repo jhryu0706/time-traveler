@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, X, Clock, Minus, RotateCcw } from "lucide-react";
+import { Plus, X, Clock, Minus, ChevronRight } from "lucide-react";
 import LocationSelector from "@/components/LocationSelector";
 import DateTimeInput from "@/components/DateTimeInput";
 import { convertDateTime, isValidDateTime, formatDayOfWeek } from "@/utils/timezone";
@@ -220,64 +220,82 @@ const Index = () => {
   return (
     <div className="h-screen bg-background text-foreground flex flex-col dark">
       {/* TIME CONVERTER Logo - Always at top */}
-      <div className="px-6 pt-6 pb-8">
-        <div className="flex items-center justify-between">
-          <div className="w-9" /> {/* Spacer for centering */}
-          <h1
-            className="text-[13px] text-muted-foreground tracking-[0.2em] uppercase"
-            style={{ fontFamily: "'Inter Tight', sans-serif" }}
-          >
-            Time Converter
-          </h1>
-          <button
-            onClick={handleResetToLocal}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-secondary/50 border border-border/50 touch-active"
-            style={{
-              boxShadow: "0 2px 4px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.05)",
-            }}
-            aria-label="Reset to local time and location"
-          >
-            <RotateCcw className="w-4 h-4 text-muted-foreground" />
-          </button>
+      <div className="px-6 pt-6 pb-10">
+        <h1
+          className="text-[13px] text-muted-foreground tracking-[0.2em] uppercase text-center"
+          style={{ fontFamily: "'Inter Tight', sans-serif" }}
+        >
+          Time Converter
+        </h1>
+        <div className="flex items-center justify-center gap-1 mt-2 text-[13px] text-muted-foreground/60">
+          <ChevronRight className="w-4 h-4" />
+          <span>Click source location or time to edit.</span>
         </div>
+        <button
+          onClick={handleResetToLocal}
+          className="flex items-center justify-center gap-1 mt-1 text-[13px] text-muted-foreground/60 w-full touch-active"
+        >
+          <ChevronRight className="w-4 h-4" />
+          <span><span className="underline">Reset</span> to local time and location</span>
+        </button>
       </div>
 
       {/* Header */}
       <div className="px-6">
-        {/* Main content - Time and Location */}
-        <div className="flex justify-between items-start mb-4">
-          <button
-            onClick={() => setLocationSelectorOpen(true)}
-            className="text-[32px] text-foreground transition-colors touch-active"
-          >
-            {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
-          </button>
-          <button
-            onClick={() => setTimeSelectorOpen(true)}
-            className="flex flex-col items-end transition-colors touch-active gap-1"
-          >
-            <div className="flex items-baseline gap-1">
-              {isDateTimeValid ? (
-                <>
-                  <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
-                    {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[0] || time12.hours + ":" + time12.minutes}
-                  </span>
-                  <span className="text-[13px] text-muted-foreground">
-                    {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[1] || time12.ampm}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="text-[32px] leading-none font-light tabular-nums text-primary">
-                    {time12.hours}:{time12.minutes}
-                  </span>
-                  <span className="text-[13px] text-muted-foreground">{time12.ampm}</span>
-                </>
-              )}
-            </div>
-            <span className="text-[13px] text-muted-foreground">{getSourceDateDisplay()}</span>
-          </button>
+        {/* Secondary header */}
+        <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
+          <span>Source Location</span>
+          <span className="text-muted-foreground">Source Time</span>
         </div>
+
+        {/* Main content - Time and Location */}
+        {!missingDateorLoc ? (
+          <div className="flex justify-between items-start mb-4">
+            <button
+              onClick={() => setLocationSelectorOpen(true)}
+              className="text-[32px] text-foreground transition-colors touch-active flex items-center gap-1"
+            >
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
+            </button>
+            <button
+              onClick={() => setTimeSelectorOpen(true)}
+              className="flex flex-col items-end transition-colors touch-active gap-1"
+            >
+              <div className="flex items-center gap-1">
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                {isDateTimeValid ? (
+                  <>
+                    <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
+                      {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[0] || time12.hours + ":" + time12.minutes}
+                    </span>
+                    <span className="text-[13px] text-muted-foreground">
+                      {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[1] || time12.ampm}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[32px] leading-none font-light tabular-nums text-primary">
+                      {time12.hours}:{time12.minutes}
+                    </span>
+                    <span className="text-[13px] text-muted-foreground">{time12.ampm}</span>
+                  </>
+                )}
+              </div>
+              <span className="text-[13px] text-muted-foreground">{getSourceDateDisplay()}</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-16 px-8">
+            <button
+              onClick={() => setLocationSelectorOpen(true)}
+              className="bg-white/10 backdrop-blur-sm text-muted-foreground px-8 py-4 rounded-2xl text-[17px] font-medium btn-press border border-white/5"
+              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            >
+              Add first location
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Time Choice Dialog - forces user to select */}
@@ -402,7 +420,7 @@ const Index = () => {
       />
 
       {/* Cities List */}
-      <div className="flex-1 overflow-y-auto bg-background pt-3 pb-16">
+      <div className="flex-1 overflow-y-auto bg-background pt-3 pb-6">
         {targetLocations.length === 0 && (
           <div className="px-6 py-8 text-center text-muted-foreground">
             <p className="text-[15px]">No cities added yet</p>
@@ -470,13 +488,6 @@ const Index = () => {
           </div>
         );
         })}
-      </div>
-
-      {/* Footer hint */}
-      <div className="fixed bottom-0 left-0 right-0 py-3 bg-background/80 backdrop-blur-sm border-t border-border/20">
-        <p className="text-center text-[13px] text-muted-foreground/60">
-          <span className="font-bold">*</span> Click location or time to edit.
-        </p>
       </div>
     </div>
   );
