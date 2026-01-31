@@ -283,6 +283,13 @@ const Index = () => {
         onOpenChange={setTimeSelectorOpen}
       />
 
+      {/* Instruction hint */}
+      <div className="px-6 pb-2">
+        <p className="text-[13px] text-muted-foreground/60 text-center">
+          <span className="font-bold text-[13px]">*</span> Click location or time to edit.
+        </p>
+      </div>
+
       {/* Divider */}
       <div className="mx-6 my-4 h-px bg-border/30" />
 
@@ -423,12 +430,6 @@ const Index = () => {
         })}
       </div>
 
-      {/* Footer instruction */}
-      <div className="px-6 pb-6 pt-2">
-        <p className="text-[13px] text-muted-foreground/60 text-center">
-          <span className="font-bold">*</span> Click location or time to edit.
-        </p>
-      </div>
     </div>
   );
 };
