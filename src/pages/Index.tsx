@@ -222,12 +222,14 @@ const Index = () => {
 
       {/* Main content - Location and Time */}
       <div className="px-6">
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex justify-between mb-4">
           <button
             onClick={() => setLocationSelectorOpen(true)}
-            className="text-[32px] leading-none text-foreground transition-colors touch-active"
+            className="flex flex-col items-start transition-colors touch-active"
           >
-            {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
+            <span className="text-[32px] leading-none text-foreground">
+              {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
+            </span>
           </button>
           <button
             onClick={() => setTimeSelectorOpen(true)}
