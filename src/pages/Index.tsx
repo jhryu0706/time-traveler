@@ -349,18 +349,6 @@ const Index = () => {
         isOpen={timeSelectorOpen}
         onOpenChange={setTimeSelectorOpen}
       />
-      <div className="flex items-center justify-center gap-1 mt-2 text-[13px] text-muted-foreground/60">
-          <ChevronRight className="w-4 h-4" />
-          <span>Click source location or time to edit.</span>
-        </div>
-        <button
-          onClick={handleResetToLocal}
-          className="flex items-center justify-center gap-1 mt-1 text-[13px] text-muted-foreground/60 w-full touch-active"
-        >
-          <ChevronRight className="w-4 h-4" />
-          <span><span className="underline">Reset</span> to local time and location</span>
-        </button>
-      </div>
 
       {/* Divider */}
       <div className="mx-6 my-4 h-px bg-border/30" />
