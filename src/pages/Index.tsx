@@ -58,6 +58,13 @@ const Index = () => {
 
   // Track previous source location for timezone conversion
   const prevSourceLocationRef = React.useRef<Location | null>(null);
+  // Track manualDateTime in a ref so we can access current value in effects
+  const manualDateTimeRef = React.useRef<string | null>(null);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    manualDateTimeRef.current = manualDateTime;
+  }, [manualDateTime]);
 
   // Sync sourceLocation to localStorage
   useEffect(() => {
@@ -66,15 +73,17 @@ const Index = () => {
     }
   }, [sourceLocation, setStoredSourceLocation]);
 
-  // Convert time when timezone changes (separate effect to avoid race conditions)
+  // Convert time when timezone changes
   useEffect(() => {
     if (!sourceLocation) return;
     
     const prevLocation = prevSourceLocationRef.current;
+    const currentManualDateTime = manualDateTimeRef.current;
     
     // Only convert if we have a previous location with different timezone and a manual time
-    if (prevLocation && prevLocation.timezone !== sourceLocation.timezone && manualDateTime) {
-      const result = convertDateTime(manualDateTime, prevLocation.timezone, sourceLocation.timezone);
+    if (prevLocation && prevLocation.timezone !== sourceLocation.timezone && currentManualDateTime) {
+      const result = convertDateTime(currentManualDateTime, prevLocation.timezone, sourceLocation.timezone);
+      
       if (result) {
         // Parse the converted result to extract time components
         // Format: "MM/DD/YYYY (Day) at HH:MM AM/PM"
@@ -90,7 +99,7 @@ const Index = () => {
     
     // Always update the ref after processing
     prevSourceLocationRef.current = sourceLocation;
-  }, [sourceLocation]); // Only depend on sourceLocation, not manualDateTime
+  }, [sourceLocation]);
 
   // Request user location on mount (only if no stored location)
   useEffect(() => {
