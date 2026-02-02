@@ -65,7 +65,11 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
 
     // Update parent value when any component changes
     // If deferManualSwitch is true, only call onChange after user has interacted.
+    // IMPORTANT: Only call onChange when the sheet is open to prevent stale state from
+    // overwriting the parent's value after reset.
     useEffect(() => {
+      // Never call onChange if the sheet is closed
+      if (!externalOpen) return;
       // Skip calling onChange if we're in deferred mode and user hasn't changed anything
       if (deferManualSwitch && !userChangedRef.current) return;
 
@@ -75,7 +79,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       const minuteStr = String(minute).padStart(2, '0');
       const formatted = `${monthStr}/${dayStr}/${year} ${hourStr}:${minuteStr} ${period}`;
       onChange(formatted);
-    }, [month, day, year, hour, minute, period, onChange, deferManualSwitch]);
+    }, [month, day, year, hour, minute, period, onChange, deferManualSwitch, externalOpen]);
 
     // Reset to the passed-in value (live clock) every time the sheet opens.
     // useLayoutEffect prevents a one-frame flash of stale values.
