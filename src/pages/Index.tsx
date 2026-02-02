@@ -59,31 +59,38 @@ const Index = () => {
   // Track previous source location for timezone conversion
   const prevSourceLocationRef = React.useRef<Location | null>(null);
 
-  // Sync sourceLocation to localStorage and convert time when timezone changes
+  // Sync sourceLocation to localStorage
   useEffect(() => {
     if (sourceLocation) {
       setStoredSourceLocation(sourceLocation);
+    }
+  }, [sourceLocation, setStoredSourceLocation]);
 
-      // If we have a previous location and manual time, convert the time to the new timezone
-      const prevLocation = prevSourceLocationRef.current;
-      if (prevLocation && manualDateTime && prevLocation.timezone !== sourceLocation.timezone) {
-        const result = convertDateTime(manualDateTime, prevLocation.timezone, sourceLocation.timezone);
-        if (result) {
-          // Parse the converted result to extract time components
-          // Format: "MM/DD/YYYY (Day) at HH:MM AM/PM"
-          const atIndex = result.converted.indexOf(" at ");
-          if (atIndex !== -1) {
-            const datePart = result.converted.substring(0, atIndex).split(" ")[0]; // "MM/DD/YYYY"
-            const timePart = result.converted.substring(atIndex + 4); // "HH:MM AM/PM"
-            const newDateTime = `${datePart} ${timePart}`;
-            setManualDateTime(newDateTime);
-          }
+  // Convert time when timezone changes (separate effect to avoid race conditions)
+  useEffect(() => {
+    if (!sourceLocation) return;
+    
+    const prevLocation = prevSourceLocationRef.current;
+    
+    // Only convert if we have a previous location with different timezone and a manual time
+    if (prevLocation && prevLocation.timezone !== sourceLocation.timezone && manualDateTime) {
+      const result = convertDateTime(manualDateTime, prevLocation.timezone, sourceLocation.timezone);
+      if (result) {
+        // Parse the converted result to extract time components
+        // Format: "MM/DD/YYYY (Day) at HH:MM AM/PM"
+        const atIndex = result.converted.indexOf(" at ");
+        if (atIndex !== -1) {
+          const datePart = result.converted.substring(0, atIndex).split(" ")[0]; // "MM/DD/YYYY"
+          const timePart = result.converted.substring(atIndex + 4); // "HH:MM AM/PM"
+          const newDateTime = `${datePart} ${timePart}`;
+          setManualDateTime(newDateTime);
         }
       }
-
-      prevSourceLocationRef.current = sourceLocation;
     }
-  }, [sourceLocation, setStoredSourceLocation, manualDateTime]);
+    
+    // Always update the ref after processing
+    prevSourceLocationRef.current = sourceLocation;
+  }, [sourceLocation]); // Only depend on sourceLocation, not manualDateTime
 
   // Request user location on mount (only if no stored location)
   useEffect(() => {
