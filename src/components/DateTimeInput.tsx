@@ -10,6 +10,8 @@ interface DateTimeInputProps {
   isValid: boolean;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** If true, opening picker does NOT auto-switch to manual mode; only user interaction does. */
+  deferManualSwitch?: boolean;
 }
 
 const months = [
@@ -22,7 +24,10 @@ const minutes = Array.from({ length: 60 }, (_, i) => i);
 const periods = ['AM', 'PM'];
 
 const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
-  function DateTimeInput({ value, onChange, isValid, isOpen: externalOpen, onOpenChange }, ref) {
+  function DateTimeInput({ value, onChange, isValid, isOpen: externalOpen, onOpenChange, deferManualSwitch = false }, ref) {
+    // Track if the user has made an actual change during this open session
+    const userChangedRef = useRef(false);
+
     // Always compute current year fresh
     const getCurrentYear = () => new Date().getFullYear();
     
@@ -59,19 +64,26 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
     const resumeScrollHandlersTimeoutRef = useRef<number | null>(null);
 
     // Update parent value when any component changes
+    // If deferManualSwitch is true, only call onChange after user has interacted.
     useEffect(() => {
+      // Skip calling onChange if we're in deferred mode and user hasn't changed anything
+      if (deferManualSwitch && !userChangedRef.current) return;
+
       const monthStr = String(month + 1).padStart(2, '0');
       const dayStr = String(day).padStart(2, '0');
       const hourStr = String(hour);
       const minuteStr = String(minute).padStart(2, '0');
       const formatted = `${monthStr}/${dayStr}/${year} ${hourStr}:${minuteStr} ${period}`;
       onChange(formatted);
-    }, [month, day, year, hour, minute, period, onChange]);
+    }, [month, day, year, hour, minute, period, onChange, deferManualSwitch]);
 
     // Reset to *current* time/date every time the sheet opens.
     // useLayoutEffect prevents a one-frame flash of a stale year (e.g. 2040).
     useLayoutEffect(() => {
       if (!externalOpen) return;
+
+      // Reset user changed tracker when opening
+      userChangedRef.current = false;
 
       // While opening, we programmatically set scrollTop for each column.
       // Suspend scroll handlers to avoid the debounced snap logic from
@@ -149,6 +161,9 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           const itemHeight = 44;
           const closestIndex = Math.round(scrollTop / itemHeight);
           const clampedIndex = Math.max(0, Math.min(closestIndex, items.length - 1));
+
+          // Mark that user has made a change
+          userChangedRef.current = true;
 
           // Let CSS scroll-snap do the visual snapping; we only update state.
           // (Programmatic smooth scrolling here fights native snapping and can
@@ -283,7 +298,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                         <button
                           key={m}
                           type="button"
-                          onClick={() => setMonth(index)}
+                          onClick={() => { userChangedRef.current = true; setMonth(index); }}
                           className={cn(
                             "w-full h-[44px] flex items-center justify-center text-base font-medium transition-all snap-center touch-active",
                             month === index ? "text-foreground font-bold" : "text-muted-foreground"
@@ -310,7 +325,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                         <button
                           key={d}
                           type="button"
-                          onClick={() => setDay(d)}
+                          onClick={() => { userChangedRef.current = true; setDay(d); }}
                           className={cn(
                             "w-full h-[44px] flex items-center justify-center text-lg font-medium transition-all snap-center touch-active",
                             day === d ? "text-foreground font-bold" : "text-muted-foreground"
@@ -337,7 +352,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                         <button
                           key={y}
                           type="button"
-                          onClick={() => setYear(y)}
+                          onClick={() => { userChangedRef.current = true; setYear(y); }}
                           className={cn(
                             "w-full h-[44px] flex items-center justify-center text-lg font-medium transition-all snap-center touch-active",
                             year === y ? "text-foreground font-bold" : "text-muted-foreground"
@@ -381,7 +396,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                         <button
                           key={h}
                           type="button"
-                          onClick={() => setHour(h)}
+                          onClick={() => { userChangedRef.current = true; setHour(h); }}
                           className={cn(
                             "w-full h-[44px] flex items-center justify-center text-lg font-medium transition-all snap-center touch-active",
                             hour === h ? "text-foreground font-bold" : "text-muted-foreground"
@@ -411,7 +426,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                         <button
                           key={m}
                           type="button"
-                          onClick={() => setMinute(m)}
+                          onClick={() => { userChangedRef.current = true; setMinute(m); }}
                           className={cn(
                             "w-full h-[44px] flex items-center justify-center text-lg font-medium transition-all snap-center touch-active",
                             minute === m ? "text-foreground font-bold" : "text-muted-foreground"
@@ -438,7 +453,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                         <button
                           key={p}
                           type="button"
-                          onClick={() => setPeriod(p as 'AM' | 'PM')}
+                          onClick={() => { userChangedRef.current = true; setPeriod(p as 'AM' | 'PM'); }}
                           className={cn(
                             "w-full h-[44px] flex items-center justify-center text-lg font-medium transition-all snap-center touch-active",
                             period === p ? "text-foreground font-bold" : "text-muted-foreground"
