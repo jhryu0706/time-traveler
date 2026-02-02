@@ -202,18 +202,21 @@ const Index = () => {
 
   return (
     <div className="h-screen bg-background text-foreground flex flex-col dark">
-      {/* Header with Hint and Reset Button */}
+      {/* Header with Logo and Reset Button */}
       <div className="px-6 pt-6 pb-6 flex items-center justify-between">
-        <div className="w-5" /> {/* Spacer for centering */}
-        <p className="text-[11px] text-muted-foreground whitespace-nowrap">
-          Click Location or Time to Edit
-        </p>
+        <div className="w-10" /> {/* Spacer for centering */}
+        <h1
+          className="text-[13px] text-muted-foreground tracking-[0.2em] uppercase"
+          style={{ fontFamily: "'Inter Tight', sans-serif" }}
+        >
+          Time Converter
+        </h1>
         <button
           onClick={handleResetToLocal}
-          className="touch-active p-1"
+          className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center touch-active hover:bg-muted transition-colors"
           title="Reset to local time and location"
         >
-          <RotateCcw className="w-5 h-5 text-muted-foreground" />
+          <RotateCcw className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
 
