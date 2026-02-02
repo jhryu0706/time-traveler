@@ -81,16 +81,32 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       setStep('time');
     }, [externalOpen]);
 
-    // Scroll to selected value in picker
-    const scrollToSelected = (scrollRef: React.RefObject<HTMLDivElement>, index: number) => {
+    // Scroll to selected value in picker.
+    // NOTE: When opening the sheet we use an instant scroll to avoid triggering
+    // handleScrollEnd mid-smooth-animation, which could snap to the wrong year.
+    const scrollToSelected = (
+      scrollRef: React.RefObject<HTMLDivElement>,
+      index: number,
+      behavior: ScrollBehavior = 'auto'
+    ) => {
       if (scrollRef.current) {
         const itemHeight = 44;
         scrollRef.current.scrollTo({
           top: index * itemHeight,
-          behavior: 'smooth'
+          behavior
         });
       }
     };
+
+    // If the sheet closes, ensure no pending debounced "scroll end" callbacks can
+    // fire later and mutate state (this can manifest as the year jumping to +1).
+    useEffect(() => {
+      if (externalOpen) return;
+      for (const key of Object.keys(scrollTimeoutRef.current)) {
+        clearTimeout(scrollTimeoutRef.current[key]);
+      }
+      scrollTimeoutRef.current = {};
+    }, [externalOpen]);
 
     // Handle scroll end and snap to closest value
     const handleScrollEnd = useCallback((
@@ -126,16 +142,18 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       
       if (step === 'date') {
         setTimeout(() => {
-          scrollToSelected(monthRef, month);
-          scrollToSelected(dayRef, day - 1);
+          // Use instant scroll on open/step change to avoid debounced snap firing mid-animation
+          scrollToSelected(monthRef, month, 'auto');
+          scrollToSelected(dayRef, day - 1, 'auto');
           const yearIndex = years.indexOf(year);
-          scrollToSelected(yearRef, yearIndex === -1 ? 1 : yearIndex);
+          scrollToSelected(yearRef, yearIndex === -1 ? 1 : yearIndex, 'auto');
         }, 150);
       } else if (step === 'time') {
         setTimeout(() => {
-          scrollToSelected(hourRef, hour - 1);
-          scrollToSelected(minuteRef, minute);
-          scrollToSelected(periodRef, period === 'AM' ? 0 : 1);
+          // Use instant scroll on open/step change to avoid debounced snap firing mid-animation
+          scrollToSelected(hourRef, hour - 1, 'auto');
+          scrollToSelected(minuteRef, minute, 'auto');
+          scrollToSelected(periodRef, period === 'AM' ? 0 : 1, 'auto');
         }, 150);
       }
     }, [step, externalOpen, month, day, year, years, hour, minute, period]);
