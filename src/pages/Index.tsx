@@ -29,15 +29,31 @@ const Index = () => {
 
   // Compute current dateTime string from live clock
   const getLiveDateTimeString = () => {
-    const now = currentTime;
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    const year = now.getFullYear();
-    let hours = now.getHours();
-    const minutes = now.getMinutes();
-    const period = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12 || 12;
-    return `${month}/${day}/${year} ${hours}:${String(minutes).padStart(2, "0")} ${period}`;
+    // Live mode must reflect the *selected source location's timezone*.
+    // We format `currentTime` into that timezone using Intl (handles DST correctly).
+    const timezone = sourceLocation?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).formatToParts(currentTime);
+
+    const map: Record<string, string> = {};
+    for (const p of parts) map[p.type] = p.value;
+
+    const month = map.month;
+    const day = map.day;
+    const year = map.year;
+    const hour = map.hour;
+    const minute = map.minute;
+    const period = (map.dayPeriod || "").toUpperCase();
+
+    return `${month}/${day}/${year} ${hour}:${minute} ${period}`;
   };
 
   // The effective dateTime - either manual selection or live
