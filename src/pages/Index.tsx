@@ -206,10 +206,10 @@ const Index = () => {
       <div className="px-6 pt-6 pb-6 flex items-center justify-between">
         <div className="w-10" /> {/* Spacer for centering */}
         <h1
-          className="text-[10px] text-muted-foreground tracking-[0.2em] uppercase"
+          className="text-[13px] text-muted-foreground tracking-[0.2em] uppercase"
           style={{ fontFamily: "'Inter Tight', sans-serif" }}
         >
-          Click Location and Time to Edit
+          Time Converter
         </h1>
         <button
           onClick={handleResetToLocal}
@@ -281,13 +281,6 @@ const Index = () => {
         isOpen={timeSelectorOpen}
         onOpenChange={setTimeSelectorOpen}
       />
-
-      {/* Instruction hint */}
-      <div className="px-6 pb-2">
-        <p className="text-[13px] text-muted-foreground/60 text-center">
-          <span className="font-bold text-[13px]">*</span> Click location or time to edit.
-        </p>
-      </div>
 
       {/* Divider */}
       <div className="mx-6 h-px bg-border/30" />
