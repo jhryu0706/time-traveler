@@ -276,8 +276,8 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       resumeScrollHandlersTimeoutRef.current = window.setTimeout(() => {
         suspendScrollHandlersRef.current = false;
         resumeScrollHandlersTimeoutRef.current = null;
-      }, 350);
-    }, [step, externalOpen, month, day, year, years, hour, minute, period]);
+      }, 500);
+    }, [step, externalOpen]);
 
     const getDayOfWeek = () => {
       const date = new Date(year, month, day);
