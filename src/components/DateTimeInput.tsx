@@ -164,6 +164,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
     }, [externalOpen]);
 
     // Handle scroll end and snap to closest value
+    // Uses both debounced onScroll AND scrollend event for reliability
     const handleScrollEnd = useCallback((
       scrollRef: React.RefObject<HTMLDivElement>,
       items: (number | string)[],
@@ -174,6 +175,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
         clearTimeout(scrollTimeoutRef.current[timeoutKey]);
       }
       
+      // Debounce: wait for scroll to settle, then snap
       scrollTimeoutRef.current[timeoutKey] = window.setTimeout(() => {
         if (scrollRef.current) {
           const scrollTop = scrollRef.current.scrollTop;
@@ -184,13 +186,58 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           // Mark that user has made a change
           userChangedRef.current = true;
 
-          // Let CSS scroll-snap do the visual snapping; we only update state.
-          // (Programmatic smooth scrolling here fights native snapping and can
-          // create jitter / "glitchy" jumps.)
+          // Update state with snapped value
           setValue(items[clampedIndex]);
         }
-      }, 100);
+      }, 80); // Reduced debounce for snappier response
     }, []);
+
+    // Attach scrollend listeners for more reliable detection (where supported)
+    useEffect(() => {
+      if (!externalOpen) return;
+
+      type ScrollConfig = {
+        ref: React.RefObject<HTMLDivElement>;
+        items: (number | string)[];
+        setValue: (val: any) => void;
+        key: string;
+      };
+
+      const refs: ScrollConfig[] = [
+        { ref: monthRef, items: Array.from({ length: 12 }, (_, i) => i), setValue: setMonth, key: 'month' },
+        { ref: dayRef, items: days, setValue: setDay, key: 'day' },
+        { ref: yearRef, items: years, setValue: setYear, key: 'year' },
+        { ref: hourRef, items: hours, setValue: setHour, key: 'hour' },
+        { ref: minuteRef, items: minutes, setValue: setMinute, key: 'minute' },
+        { ref: periodRef, items: periods, setValue: (p: string) => setPeriod(p as 'AM' | 'PM'), key: 'period' },
+      ];
+
+      const handlers: Array<{ el: HTMLDivElement; handler: () => void }> = [];
+
+      refs.forEach(({ ref, items, setValue }) => {
+        const el = ref.current;
+        if (!el) return;
+
+        const onScrollEnd = () => {
+          if (suspendScrollHandlersRef.current) return;
+          const scrollTop = el.scrollTop;
+          const itemHeight = 44;
+          const closestIndex = Math.round(scrollTop / itemHeight);
+          const clampedIndex = Math.max(0, Math.min(closestIndex, items.length - 1));
+          userChangedRef.current = true;
+          setValue(items[clampedIndex]);
+        };
+
+        el.addEventListener('scrollend', onScrollEnd);
+        handlers.push({ el, handler: onScrollEnd });
+      });
+
+      return () => {
+        handlers.forEach(({ el, handler }) => {
+          el.removeEventListener('scrollend', handler);
+        });
+      };
+    }, [externalOpen, step, years]);
 
     // Scroll to initial positions when sheet opens or step changes
     useEffect(() => {
