@@ -97,7 +97,7 @@ const Index = () => {
   // Toggle a location - add if not present, remove if present
   const toggleTargetLocation = (location: Location) => {
     const existingIndex = targetLocations.findIndex((l) => l.name === location.name);
-    
+
     if (existingIndex !== -1) {
       // Remove it
       setTargetLocations((prev) => prev.filter((_, i) => i !== existingIndex));
@@ -128,7 +128,7 @@ const Index = () => {
   const removeTargetLocation = (index: number) => {
     // Add to removing set to trigger fade out animation
     setRemovingIndices((prev) => new Set(prev).add(index));
-    
+
     // After animation, actually remove
     setTimeout(() => {
       setTargetLocations((prev) => prev.filter((_, i) => i !== index));
@@ -259,7 +259,6 @@ const Index = () => {
         </div>
       </div>
 
-
       {/* Location Selector Sheet */}
       <LocationSelector
         label="Source Location"
@@ -291,18 +290,24 @@ const Index = () => {
       </div>
 
       {/* Divider */}
-      <div className="mx-6 my-4 h-px bg-border/30" />
+      <div className="mx-6 h-px bg-border/30" />
 
       {/* Add/Remove Buttons */}
       <div
         className={`px-6 py-3 bg-background flex items-center transition-all duration-300 ${
-          removeMode || isExitingRemoveMode ? "justify-start" : targetLocations.length > 0 ? "justify-between" : "justify-center"
+          removeMode || isExitingRemoveMode
+            ? "justify-start"
+            : targetLocations.length > 0
+              ? "justify-between"
+              : "justify-center"
         }`}
       >
         {/* Remove/Done button - visible when there are cities OR in remove mode */}
         <div
           className={`transition-opacity duration-200 ${
-            ((targetLocations.length > 0 || removeMode) && !isTransitioningToEmpty && !isExitingRemoveMode) ? "opacity-100" : "opacity-0 pointer-events-none"
+            (targetLocations.length > 0 || removeMode) && !isTransitioningToEmpty && !isExitingRemoveMode
+              ? "opacity-100"
+              : "opacity-0 pointer-events-none"
           } ${targetLocations.length === 0 && !removeMode ? "absolute" : ""}`}
         >
           <button
@@ -407,29 +412,28 @@ const Index = () => {
                 }`}
                 disabled={!removeMode || isRemoving}
               >
-              {/* Secondary header */}
-              <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
-                <span>{displayDate}</span>
-                <span>{timeDiff}</span>
-              </div>
-
-              {/* Main content - Time and City */}
-              <div className="flex justify-between items-baseline">
-                <span className="text-[32px] text-foreground">{location.name.split(",")[0]}</span>
-
-                <div className="flex items-baseline gap-2">
-                  <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
-                    {displayTime.hours}:{displayTime.minutes}
-                  </span>
-                  <span className="text-[13px] text-muted-foreground">{displayTime.ampm}</span>
+                {/* Secondary header */}
+                <div className="flex justify-between items-center text-[13px] text-muted-foreground mb-2">
+                  <span>{displayDate}</span>
+                  <span>{timeDiff}</span>
                 </div>
-              </div>
-            </button>
-          </div>
-        );
+
+                {/* Main content - Time and City */}
+                <div className="flex justify-between items-baseline">
+                  <span className="text-[32px] text-foreground">{location.name.split(",")[0]}</span>
+
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
+                      {displayTime.hours}:{displayTime.minutes}
+                    </span>
+                    <span className="text-[13px] text-muted-foreground">{displayTime.ampm}</span>
+                  </div>
+                </div>
+              </button>
+            </div>
+          );
         })}
       </div>
-
     </div>
   );
 };
