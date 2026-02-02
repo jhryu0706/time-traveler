@@ -51,6 +51,12 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
     const periodRef = useRef<HTMLDivElement>(null);
     
     const scrollTimeoutRef = useRef<{ [key: string]: number }>({});
+    // Prevent "programmatic" scroll positioning (when opening / switching steps)
+    // from triggering the debounced snap handler.
+    // Without this, the year column can briefly land between items and round up
+    // to the next year (e.g. 2027).
+    const suspendScrollHandlersRef = useRef(false);
+    const resumeScrollHandlersTimeoutRef = useRef<number | null>(null);
 
     // Update parent value when any component changes
     useEffect(() => {
@@ -66,6 +72,16 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
     // useLayoutEffect prevents a one-frame flash of a stale year (e.g. 2040).
     useLayoutEffect(() => {
       if (!externalOpen) return;
+
+      // While opening, we programmatically set scrollTop for each column.
+      // Suspend scroll handlers to avoid the debounced snap logic from
+      // interpreting those intermediate scroll positions as user input.
+      suspendScrollHandlersRef.current = true;
+      if (resumeScrollHandlersTimeoutRef.current) {
+        window.clearTimeout(resumeScrollHandlersTimeoutRef.current);
+        resumeScrollHandlersTimeoutRef.current = null;
+      }
+
       const now = new Date();
       const currentHour = now.getHours();
       const currentYear = now.getFullYear();
@@ -106,6 +122,14 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
         clearTimeout(scrollTimeoutRef.current[key]);
       }
       scrollTimeoutRef.current = {};
+
+      // If the sheet closes mid-initialization, ensure we don't keep scroll
+      // handlers suspended (or resume later and unexpectedly run snaps).
+      suspendScrollHandlersRef.current = false;
+      if (resumeScrollHandlersTimeoutRef.current) {
+        window.clearTimeout(resumeScrollHandlersTimeoutRef.current);
+        resumeScrollHandlersTimeoutRef.current = null;
+      }
     }, [externalOpen]);
 
     // Handle scroll end and snap to closest value
@@ -125,12 +149,10 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           const itemHeight = 44;
           const closestIndex = Math.round(scrollTop / itemHeight);
           const clampedIndex = Math.max(0, Math.min(closestIndex, items.length - 1));
-          
-          scrollRef.current.scrollTo({
-            top: clampedIndex * itemHeight,
-            behavior: 'smooth'
-          });
-          
+
+          // Let CSS scroll-snap do the visual snapping; we only update state.
+          // (Programmatic smooth scrolling here fights native snapping and can
+          // create jitter / "glitchy" jumps.)
           setValue(items[clampedIndex]);
         }
       }, 100);
@@ -139,8 +161,17 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
     // Scroll to initial positions when sheet opens or step changes
     useEffect(() => {
       if (!externalOpen) return;
+
+      // Keep scroll handlers suspended while we position the columns.
+      // We'll re-enable them shortly after.
+      suspendScrollHandlersRef.current = true;
+      if (resumeScrollHandlersTimeoutRef.current) {
+        window.clearTimeout(resumeScrollHandlersTimeoutRef.current);
+        resumeScrollHandlersTimeoutRef.current = null;
+      }
       
       if (step === 'date') {
+        // Wait a moment for the sheet animation/layout to settle.
         setTimeout(() => {
           // Use instant scroll on open/step change to avoid debounced snap firing mid-animation
           scrollToSelected(monthRef, month, 'auto');
@@ -149,6 +180,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           scrollToSelected(yearRef, yearIndex === -1 ? 1 : yearIndex, 'auto');
         }, 150);
       } else if (step === 'time') {
+        // Wait a moment for the sheet animation/layout to settle.
         setTimeout(() => {
           // Use instant scroll on open/step change to avoid debounced snap firing mid-animation
           scrollToSelected(hourRef, hour - 1, 'auto');
@@ -156,6 +188,14 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
           scrollToSelected(periodRef, period === 'AM' ? 0 : 1, 'auto');
         }, 150);
       }
+
+      // Re-enable scroll handlers after the initial positioning has completed.
+      // (Using a timeout keeps us safe from late scroll events during the open
+      // animation on mobile.)
+      resumeScrollHandlersTimeoutRef.current = window.setTimeout(() => {
+        suspendScrollHandlersRef.current = false;
+        resumeScrollHandlersTimeoutRef.current = null;
+      }, 350);
     }, [step, externalOpen, month, day, year, years, hour, minute, period]);
 
     const getDayOfWeek = () => {
@@ -233,7 +273,10 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                       ref={monthRef}
                       className="flex-[1.5] overflow-y-auto hide-scrollbar snap-y snap-mandatory relative z-10"
                       style={{ scrollSnapType: 'y mandatory' }}
-                      onScroll={() => handleScrollEnd(monthRef, Array.from({ length: 12 }, (_, i) => i), setMonth, 'month')}
+                      onScroll={() => {
+                        if (suspendScrollHandlersRef.current) return;
+                        handleScrollEnd(monthRef, Array.from({ length: 12 }, (_, i) => i), setMonth, 'month');
+                      }}
                     >
                       <div className="h-[68px]" />
                       {months.map((m, index) => (
@@ -257,7 +300,10 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                       ref={dayRef}
                       className="flex-1 overflow-y-auto hide-scrollbar snap-y snap-mandatory relative z-10"
                       style={{ scrollSnapType: 'y mandatory' }}
-                      onScroll={() => handleScrollEnd(dayRef, days, setDay, 'day')}
+                      onScroll={() => {
+                        if (suspendScrollHandlersRef.current) return;
+                        handleScrollEnd(dayRef, days, setDay, 'day');
+                      }}
                     >
                       <div className="h-[68px]" />
                       {days.map((d) => (
@@ -281,7 +327,10 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                       ref={yearRef}
                       className="flex-1 overflow-y-auto hide-scrollbar snap-y snap-mandatory relative z-10"
                       style={{ scrollSnapType: 'y mandatory' }}
-                      onScroll={() => handleScrollEnd(yearRef, years, setYear, 'year')}
+                      onScroll={() => {
+                        if (suspendScrollHandlersRef.current) return;
+                        handleScrollEnd(yearRef, years, setYear, 'year');
+                      }}
                     >
                       <div className="h-[68px]" />
                       {years.map((y) => (
@@ -322,7 +371,10 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                       ref={hourRef}
                       className="flex-1 overflow-y-auto hide-scrollbar snap-y snap-mandatory relative z-10"
                       style={{ scrollSnapType: 'y mandatory' }}
-                      onScroll={() => handleScrollEnd(hourRef, hours, setHour, 'hour')}
+                      onScroll={() => {
+                        if (suspendScrollHandlersRef.current) return;
+                        handleScrollEnd(hourRef, hours, setHour, 'hour');
+                      }}
                     >
                       <div className="h-[68px]" />
                       {hours.map((h) => (
@@ -349,7 +401,10 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                       ref={minuteRef}
                       className="flex-1 overflow-y-auto hide-scrollbar snap-y snap-mandatory relative z-10"
                       style={{ scrollSnapType: 'y mandatory' }}
-                      onScroll={() => handleScrollEnd(minuteRef, minutes, setMinute, 'minute')}
+                      onScroll={() => {
+                        if (suspendScrollHandlersRef.current) return;
+                        handleScrollEnd(minuteRef, minutes, setMinute, 'minute');
+                      }}
                     >
                       <div className="h-[68px]" />
                       {minutes.map((m) => (
@@ -373,7 +428,10 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                       ref={periodRef}
                       className="w-16 overflow-y-auto hide-scrollbar snap-y snap-mandatory relative z-10"
                       style={{ scrollSnapType: 'y mandatory' }}
-                      onScroll={() => handleScrollEnd(periodRef, periods, (p: string) => setPeriod(p as 'AM' | 'PM'), 'period')}
+                      onScroll={() => {
+                        if (suspendScrollHandlersRef.current) return;
+                        handleScrollEnd(periodRef, periods, (p: string) => setPeriod(p as 'AM' | 'PM'), 'period');
+                      }}
                     >
                       <div className="h-[68px]" />
                       {periods.map((p) => (
