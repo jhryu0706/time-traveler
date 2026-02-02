@@ -257,7 +257,7 @@ const Index = () => {
   return (
     <div className="h-screen bg-background text-foreground flex flex-col dark">
       {/* Header with Hint and Reset Button */}
-      <div className="px-6 pt-4 pb-6 flex items-center justify-between">
+      <div className="px-6 pt-4 pb-8 flex items-center justify-between">
         <div className="w-5" /> {/* Spacer for centering */}
         <p className="text-[13px] text-muted-foreground whitespace-nowrap">Click Location or Time to Edit</p>
         <button onClick={handleResetToLocal} className="touch-active p-1" title="Reset to local time and location">
