@@ -27,17 +27,26 @@ const Index = () => {
   const [manualDateTime, setManualDateTime] = useState<string | null>(null); // null = live mode
   const [targetLocations, setTargetLocations] = useLocalStorage<Location[]>(STORAGE_KEYS.TARGET_LOCATIONS, []);
 
-  // Compute current dateTime string from live clock
+  // Compute current dateTime string from live clock in the source timezone
   const getLiveDateTimeString = () => {
-    const now = currentTime;
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    const year = now.getFullYear();
-    let hours = now.getHours();
-    const minutes = now.getMinutes();
-    const period = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12 || 12;
-    return `${month}/${day}/${year} ${hours}:${String(minutes).padStart(2, "0")} ${period}`;
+    const tz = sourceLocation?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+    const parts = formatter.formatToParts(now);
+    const p: Record<string, string> = {};
+    parts.forEach((part) => {
+      p[part.type] = part.value;
+    });
+    // "MM/DD/YYYY H:MM AM"
+    return `${p.month}/${p.day}/${p.year} ${p.hour}:${p.minute} ${p.dayPeriod?.toUpperCase() ?? 'AM'}`;
   };
 
   // The effective dateTime - either manual selection or live
@@ -280,6 +289,7 @@ const Index = () => {
         isValid={isDateTimeValid || dateTime.length === 0}
         isOpen={timeSelectorOpen}
         onOpenChange={setTimeSelectorOpen}
+        deferManualSwitch
       />
 
       {/* Instruction hint */}
