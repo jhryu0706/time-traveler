@@ -222,7 +222,7 @@ const Index = () => {
         </h1>
         <button
           onClick={handleResetToLocal}
-          className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center touch-active hover:bg-muted transition-colors"
+          className="w-10 h-10 rounded-full bg-card shadow-sm flex items-center justify-center touch-active hover:bg-muted transition-colors"
           title="Reset to local time and location"
         >
           <RotateCcw className="w-4 h-4 text-muted-foreground" />
