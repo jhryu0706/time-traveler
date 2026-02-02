@@ -77,8 +77,8 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
       onChange(formatted);
     }, [month, day, year, hour, minute, period, onChange, deferManualSwitch]);
 
-    // Reset to *current* time/date every time the sheet opens.
-    // useLayoutEffect prevents a one-frame flash of a stale year (e.g. 2040).
+    // Reset to the passed-in value (live clock) every time the sheet opens.
+    // useLayoutEffect prevents a one-frame flash of stale values.
     useLayoutEffect(() => {
       if (!externalOpen) return;
 
@@ -94,20 +94,39 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
         resumeScrollHandlersTimeoutRef.current = null;
       }
 
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentYear = now.getFullYear();
+      // Parse the current value (format: "MM/DD/YYYY H:MM AM/PM")
+      const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{1,2}):(\d{2})\s+(AM|PM)$/i);
+      if (match) {
+        const [, monthStr, dayStr, yearStr, hourStr, minuteStr, periodStr] = match;
+        const parsedYear = parseInt(yearStr, 10);
+        const parsedMonth = parseInt(monthStr, 10) - 1;
+        const parsedDay = parseInt(dayStr, 10);
+        const parsedHour = parseInt(hourStr, 10);
+        const parsedMinute = parseInt(minuteStr, 10);
+        const parsedPeriod = periodStr.toUpperCase() as 'AM' | 'PM';
 
-      // Always reset baseYear to current year when opening
-      setBaseYear(currentYear);
-      setMonth(now.getMonth());
-      setDay(now.getDate());
-      setYear(currentYear);
-      setHour(currentHour % 12 || 12);
-      setMinute(now.getMinutes());
-      setPeriod(currentHour >= 12 ? 'PM' : 'AM');
+        setBaseYear(parsedYear);
+        setMonth(parsedMonth);
+        setDay(parsedDay);
+        setYear(parsedYear);
+        setHour(parsedHour);
+        setMinute(parsedMinute);
+        setPeriod(parsedPeriod);
+      } else {
+        // Fallback to current local time if value can't be parsed
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentYear = now.getFullYear();
+        setBaseYear(currentYear);
+        setMonth(now.getMonth());
+        setDay(now.getDate());
+        setYear(currentYear);
+        setHour(currentHour % 12 || 12);
+        setMinute(now.getMinutes());
+        setPeriod(currentHour >= 12 ? 'PM' : 'AM');
+      }
       setStep('time');
-    }, [externalOpen]);
+    }, [externalOpen, value]);
 
     // Scroll to selected value in picker.
     // NOTE: When opening the sheet we use an instant scroll to avoid triggering
