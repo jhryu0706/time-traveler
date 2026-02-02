@@ -205,14 +205,8 @@ const Index = () => {
       {/* Header with Hint and Reset Button */}
       <div className="px-6 pt-6 pb-6 flex items-center justify-between">
         <div className="w-5" /> {/* Spacer for centering */}
-        <p className="text-[11px] text-muted-foreground whitespace-nowrap">
-          Click Location or Time to Edit
-        </p>
-        <button
-          onClick={handleResetToLocal}
-          className="touch-active p-1"
-          title="Reset to local time and location"
-        >
+        <p className="text-[13px] text-muted-foreground whitespace-nowrap">Click Location or Time to Edit</p>
+        <button onClick={handleResetToLocal} className="touch-active p-1" title="Reset to local time and location">
           <RotateCcw className="w-5 h-5 text-muted-foreground" />
         </button>
       </div>
