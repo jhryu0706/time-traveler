@@ -222,7 +222,7 @@ const Index = () => {
         </h1>
         <button
           onClick={handleResetToLocal}
-          className="w-10 h-10 rounded-full flex items-center justify-center touch-active hover:bg-muted/50 transition-colors"
+          className="w-10 h-10 rounded-full bg-card shadow-sm flex items-center justify-center touch-active hover:bg-muted transition-colors"
           title="Reset to local time and location"
         >
           <RotateCcw className="w-4 h-4 text-muted-foreground" />
@@ -234,7 +234,7 @@ const Index = () => {
         <div className="flex justify-between mb-4">
           <button
             onClick={() => setLocationSelectorOpen(true)}
-            className="flex flex-col items-start px-4 py-3 rounded-xl border border-border/40 bg-card/50 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all touch-active hover:bg-card/80"
+            className="flex flex-col items-start transition-colors touch-active"
           >
             <span className="text-[32px] leading-none text-foreground">
               {sourceLocation ? sourceLocation.name.split(",")[0] : "Local"}
@@ -242,7 +242,7 @@ const Index = () => {
           </button>
           <button
             onClick={() => setTimeSelectorOpen(true)}
-            className="flex flex-col items-end px-4 py-3 rounded-xl border border-border/40 bg-card/50 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all touch-active hover:bg-card/80"
+            className="flex flex-col items-end transition-colors touch-active"
           >
             <div className="flex items-baseline gap-1">
               {isDateTimeValid ? (
@@ -292,7 +292,12 @@ const Index = () => {
         deferManualSwitch
       />
 
-
+      {/* Instruction hint */}
+      <div className="px-6 pb-2">
+        <p className="text-[13px] text-muted-foreground/60 text-center">
+          <span className="font-bold text-[13px]">*</span> Click location or time to edit.
+        </p>
+      </div>
 
       {/* Divider */}
       <div className="mx-6 h-px bg-border/30" />
