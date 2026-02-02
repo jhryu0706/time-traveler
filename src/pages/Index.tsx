@@ -27,26 +27,17 @@ const Index = () => {
   const [manualDateTime, setManualDateTime] = useState<string | null>(null); // null = live mode
   const [targetLocations, setTargetLocations] = useLocalStorage<Location[]>(STORAGE_KEYS.TARGET_LOCATIONS, []);
 
-  // Compute current dateTime string from live clock in the source timezone
+  // Compute current dateTime string from live clock
   const getLiveDateTimeString = () => {
-    const tz = sourceLocation?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const now = new Date();
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone: tz,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-    const parts = formatter.formatToParts(now);
-    const p: Record<string, string> = {};
-    parts.forEach((part) => {
-      p[part.type] = part.value;
-    });
-    // "MM/DD/YYYY H:MM AM"
-    return `${p.month}/${p.day}/${p.year} ${p.hour}:${p.minute} ${p.dayPeriod?.toUpperCase() ?? 'AM'}`;
+    const now = currentTime;
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const year = now.getFullYear();
+    let hours = now.getHours();
+    const minutes = now.getMinutes();
+    const period = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${month}/${day}/${year} ${hours}:${String(minutes).padStart(2, "0")} ${period}`;
   };
 
   // The effective dateTime - either manual selection or live
@@ -218,11 +209,11 @@ const Index = () => {
           className="text-[13px] text-muted-foreground tracking-[0.2em] uppercase"
           style={{ fontFamily: "'Inter Tight', sans-serif" }}
         >
-          Time Converter
+          Click Location or Time to Edit.
         </h1>
         <button
           onClick={handleResetToLocal}
-          className="w-10 h-10 rounded-full bg-card shadow-sm flex items-center justify-center touch-active hover:bg-muted transition-colors"
+          className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center touch-active hover:bg-muted transition-colors"
           title="Reset to local time and location"
         >
           <RotateCcw className="w-4 h-4 text-muted-foreground" />
@@ -289,7 +280,6 @@ const Index = () => {
         isValid={isDateTimeValid || dateTime.length === 0}
         isOpen={timeSelectorOpen}
         onOpenChange={setTimeSelectorOpen}
-        deferManualSwitch
       />
 
       {/* Instruction hint */}
