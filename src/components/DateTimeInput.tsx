@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, forwardRef, useCallback } from 'react';
-import { Calendar as CalendarIcon, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { format } from 'date-fns';
+import BottomSheet from '@/components/BottomSheet';
 
 interface DateTimeInputProps {
   value: string;
@@ -285,7 +284,7 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
 
     const getDayOfWeek = () => {
       const date = new Date(year, month, day);
-      return format(date, 'EEE');
+      return new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(date);
     };
 
     const getRelativeDateLabel = () => {
@@ -317,18 +316,8 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
 
     // If controlled externally, render as bottom sheet
     if (onOpenChange !== undefined) {
-      if (!externalOpen) return null;
-      
       return (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/50 z-40 animate-fade-in"
-            onClick={closeSheet}
-          />
-          
-          {/* Bottom Sheet */}
-          <div className="fixed inset-x-0 bottom-0 bg-popover border-t border-border rounded-t-2xl z-50 animate-slide-up max-h-[80vh] flex flex-col">
+        <BottomSheet isOpen={!!externalOpen} onClose={closeSheet} maxHeight="80vh">
             {/* Header */}
             <div className="flex justify-between px-4 py-3 border-b border-border">
               <div>
@@ -548,31 +537,11 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
                 </div>
               )}
             </div>
-          </div>
-        </>
+        </BottomSheet>
       );
     }
 
-    // Original inline mode (fallback, not used in current flow)
-    return (
-      <div ref={ref} className="space-y-3">
-        <label className="block text-sm font-medium text-muted-foreground">
-          Date & Time
-        </label>
-        
-        <Button
-          variant="outline"
-          className={cn(
-            "w-full h-[52px] justify-start text-left font-normal px-4 gap-3 touch-active",
-            "text-muted-foreground"
-          )}
-          onClick={() => onOpenChange?.(true)}
-        >
-          <CalendarIcon className="w-5 h-5 flex-shrink-0" />
-          {displayTime ? `${displayDate} at ${displayTime}` : 'Select date & time'}
-        </Button>
-      </div>
-    );
+    return null;
   }
 );
 

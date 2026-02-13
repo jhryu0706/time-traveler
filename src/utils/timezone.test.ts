@@ -15,7 +15,9 @@ describe("convertDateTime", () => {
     console.log("Conversion result:", result);
 
     expect(result).not.toBeNull();
-    expect(result?.converted).toContain("9:00 PM");
+    expect(result?.hour).toBe("9");
+    expect(result?.minute).toBe("00");
+    expect(result?.ampm).toBe("PM");
   });
 
   it("should convert time correctly when crossing day boundary", () => {
@@ -30,15 +32,15 @@ describe("convertDateTime", () => {
     console.log("Day boundary result:", result);
 
     expect(result).not.toBeNull();
-    expect(result?.converted).toContain("7:00 AM");
+    expect(result?.hour).toBe("7");
+    expect(result?.minute).toBe("00");
+    expect(result?.ampm).toBe("AM");
     expect(result?.dayDiff).toBe(1); // Next day
   });
 
   it("should handle conversion from browser local time to Abu Dhabi", () => {
-    // Simulating "local time -5 hours" scenario
-    // If local is 2:00 PM and we want Abu Dhabi time
     const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    
+
     const result = convertDateTime(
       "02/02/2026 2:00 PM",
       localTimezone,

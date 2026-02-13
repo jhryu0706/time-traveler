@@ -2,15 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Plus, Minus, RotateCcw } from "lucide-react";
 import LocationSelector from "@/components/LocationSelector";
 import DateTimeInput from "@/components/DateTimeInput";
-import { convertDateTime, isValidDateTime, formatDayOfWeek } from "@/utils/timezone";
+import { convertDateTime, isValidDateTime } from "@/utils/timezone";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-
-interface Location {
-  name: string;
-  timezone: string;
-  lat?: number;
-  lng?: number;
-}
+import type { Location } from "@/types";
 
 const STORAGE_KEYS = {
   SOURCE_LOCATION: "timeConverter_sourceLocation",
@@ -19,11 +13,10 @@ const STORAGE_KEYS = {
 
 const Index = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [storedSourceLocation, setStoredSourceLocation] = useLocalStorage<Location | null>(
+  const [sourceLocation, setSourceLocation] = useLocalStorage<Location | null>(
     STORAGE_KEYS.SOURCE_LOCATION,
     null,
   );
-  const [sourceLocation, setSourceLocation] = useState<Location | null>(storedSourceLocation);
   const [manualDateTime, setManualDateTime] = useState<string | null>(null); // null = live mode
   const [targetLocations, setTargetLocations] = useLocalStorage<Location[]>(STORAGE_KEYS.TARGET_LOCATIONS, []);
 
@@ -82,13 +75,6 @@ const Index = () => {
     manualDateTimeRef.current = manualDateTime;
   }, [manualDateTime]);
 
-  // Sync sourceLocation to localStorage
-  useEffect(() => {
-    if (sourceLocation) {
-      setStoredSourceLocation(sourceLocation);
-    }
-  }, [sourceLocation, setStoredSourceLocation]);
-
   // Convert time when timezone changes
   useEffect(() => {
     if (!sourceLocation) return;
@@ -101,15 +87,7 @@ const Index = () => {
       const result = convertDateTime(currentManualDateTime, prevLocation.timezone, sourceLocation.timezone);
 
       if (result) {
-        // Parse the converted result to extract time components
-        // Format: "MM/DD/YYYY (Day) at HH:MM AM/PM"
-        const atIndex = result.converted.indexOf(" at ");
-        if (atIndex !== -1) {
-          const datePart = result.converted.substring(0, atIndex).split(" ")[0]; // "MM/DD/YYYY"
-          const timePart = result.converted.substring(atIndex + 4); // "HH:MM AM/PM"
-          const newDateTime = `${datePart} ${timePart}`;
-          setManualDateTime(newDateTime);
-        }
+        setManualDateTime(`${result.month}/${result.day}/${result.year} ${result.hour}:${result.minute} ${result.ampm}`);
       }
     }
 
@@ -117,28 +95,21 @@ const Index = () => {
     prevSourceLocationRef.current = sourceLocation;
   }, [sourceLocation]);
 
-  // Request user location on mount (only if no stored location)
+  // Set default source location on mount if none stored
   useEffect(() => {
     if (hasRequestedLocation) return;
     setHasRequestedLocation(true);
 
-    // If we have a stored source location, use it
-    if (storedSourceLocation) {
-      setSourceLocation(storedSourceLocation);
-    } else {
-      // Get browser timezone without geolocation
+    if (!sourceLocation) {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const cityFromTimezone = "Local";
-
       setSourceLocation({
-        name: cityFromTimezone,
+        name: "Local",
         timezone: userTimezone,
         lat: 0,
         lng: 0,
       });
     }
-    // Start in live mode (manualDateTime is already null)
-  }, [hasRequestedLocation, storedSourceLocation]);
+  }, [hasRequestedLocation, sourceLocation, setSourceLocation]);
 
   // Update current time every second
   useEffect(() => {
@@ -170,15 +141,6 @@ const Index = () => {
     }
   };
 
-  const addTargetLocations = (locations: Location[]) => {
-    // In multi-select mode, this is called for each toggle
-    locations.forEach((loc) => toggleTargetLocation(loc));
-  };
-
-  const addTargetLocation = (location: Location) => {
-    toggleTargetLocation(location);
-  };
-
   const removeTargetLocation = (index: number) => {
     // Add to removing set to trigger fade out animation
     setRemovingIndices((prev) => new Set(prev).add(index));
@@ -199,41 +161,15 @@ const Index = () => {
     return convertDateTime(dateTime, sourceLocation.timezone, targetTimezone);
   };
 
-  const formatTime12Hour = (date: Date) => {
-    let hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-    return {
-      hours: hours.toString().padStart(2, "0"),
-      minutes: minutes.toString().padStart(2, "0"),
-      ampm,
-    };
-  };
+  // Parse dateTime string into display parts
+  const parsedSource = (() => {
+    const match = dateTime.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{1,2}):(\d{2})\s+(AM|PM)$/i);
+    if (!match) return null;
+    const [, month, day, year, hour, minute, ampm] = match;
+    return { month, day, year, time: `${hour}:${minute}`, ampm: ampm.toUpperCase() };
+  })();
 
-  const formatDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    return `${year}/${month}/${day}`;
-  };
-
-  // Get date string from dateTime (format: "MM/DD/YYYY HH:MM AM/PM")
-  const getSourceDateDisplay = () => {
-    if (!isDateTimeValid) return formatDate(currentTime);
-    // dateTime format: "MM/DD/YYYY HH:MM AM/PM"
-    const datePart = dateTime.split(" ")[0]; // "MM/DD/YYYY"
-    const [month, day, year] = datePart.split("/");
-    return `${year}/${month}/${day}`;
-  };
-
-  const getTimeDifference = (targetTimezone: string) => {
-    if (!sourceLocation || !isDateTimeValid) return "";
-    const result = getConvertedTime(targetTimezone);
-    if (!result) return "";
-
-    const dayDiff = result.dayDiff;
+  const formatDayDiff = (dayDiff: number) => {
     if (dayDiff === 0) return "Same day";
     if (dayDiff > 0) return `+${dayDiff} day${dayDiff > 1 ? "s" : ""}`;
     return `${dayDiff} day${dayDiff < -1 ? "s" : ""}`;
@@ -252,10 +188,8 @@ const Index = () => {
     });
   };
 
-  const time12 = formatTime12Hour(currentTime);
-
   return (
-    <div className="h-screen bg-background text-foreground flex flex-col dark">
+    <div className="h-screen bg-background text-foreground flex flex-col">
       {/* Header with Hint and Reset Button */}
       <div className="px-6 pt-4 pb-8 flex items-center justify-between">
         <div className="w-5" /> {/* Spacer for centering */}
@@ -280,26 +214,23 @@ const Index = () => {
             onClick={() => setTimeSelectorOpen(true)}
             className="flex flex-col items-end transition-colors touch-active"
           >
-            <div className="flex items-baseline gap-1">
-              {isDateTimeValid ? (
-                <>
+            {parsedSource ? (
+              <>
+                <div className="flex items-baseline gap-1">
                   <span className="text-[32px] leading-none font-light tabular-nums text-foreground">
-                    {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[0] || time12.hours + ":" + time12.minutes}
+                    {parsedSource.time}
                   </span>
                   <span className="text-[13px] text-muted-foreground">
-                    {formatDayOfWeek(dateTime).split(" at ")[1]?.split(" ")[1] || time12.ampm}
+                    {parsedSource.ampm}
                   </span>
-                </>
-              ) : (
-                <>
-                  <span className="text-[32px] leading-none font-light tabular-nums text-primary">
-                    {time12.hours}:{time12.minutes}
-                  </span>
-                  <span className="text-[13px] text-muted-foreground">{time12.ampm}</span>
-                </>
-              )}
-            </div>
-            <span className="text-[13px] text-muted-foreground">{getSourceDateDisplay()}</span>
+                </div>
+                <span className="text-[13px] text-muted-foreground">
+                  {parsedSource.year}/{parsedSource.month}/{parsedSource.day}
+                </span>
+              </>
+            ) : (
+              <span className="text-[32px] leading-none font-light tabular-nums text-foreground">--:--</span>
+            )}
           </button>
         </div>
       </div>
@@ -396,7 +327,7 @@ const Index = () => {
         onOpenChange={setAddCitySelectorOpen}
         multiSelect={true}
         onMultiSelect={(locations) => {
-          addTargetLocations(locations);
+          locations.forEach((loc) => toggleTargetLocation(loc));
           setAddCitySelectorOpen(false);
         }}
         existingLocations={targetLocations}
@@ -412,24 +343,14 @@ const Index = () => {
 
         {targetLocations.map((location, index) => {
           const result = getConvertedTime(location.timezone);
-          const timeDiff = getTimeDifference(location.timezone);
+          const timeDiff = result ? formatDayDiff(result.dayDiff) : "";
 
-          // Parse converted time for display
-          let displayTime = { hours: "--", minutes: "--", ampm: "" };
-          let displayDate = "";
-
-          if (result) {
-            const converted = result.converted;
-            // Format: "MM/DD/YYYY (Day) at HH:MM AM/PM"
-            const atIndex = converted.indexOf(" at ");
-            if (atIndex !== -1) {
-              displayDate = converted.substring(0, atIndex);
-              const timePart = converted.substring(atIndex + 4);
-              const [time, ampm] = timePart.split(" ");
-              const [hours, minutes] = time.split(":");
-              displayTime = { hours, minutes, ampm };
-            }
-          }
+          const displayTime = result
+            ? { hours: result.hour, minutes: result.minute, ampm: result.ampm }
+            : { hours: "--", minutes: "--", ampm: "" };
+          const displayDate = result
+            ? `${result.month}/${result.day}/${result.year} (${result.dayOfWeek})`
+            : "";
           const isRemoving = removingIndices.has(index);
 
           return (

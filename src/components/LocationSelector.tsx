@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, MapPin, ChevronDown, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { cities, City } from "@/data/cities";
 import { getCurrentTimeInTimezone } from "@/utils/timezone";
 import { cn } from "@/lib/utils";
 import TimezoneSelector from "./TimezoneSelector";
-
-type Location = { name: string; timezone: string; lat?: number; lng?: number };
+import BottomSheet from "./BottomSheet";
+import type { Location } from "@/types";
 
 interface LocationSelectorProps {
   label: string;
@@ -43,7 +43,6 @@ export default function LocationSelector({
   const [multipleTimezones, setMultipleTimezones] = useState<string[]>([]);
   const [pendingCity, setPendingCity] = useState<City | null>(null);
   const [selectedLocations, setSelectedLocations] = useState<Location[]>([]);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Reset selected locations when sheet opens
@@ -67,17 +66,6 @@ export default function LocationSelector({
       .sort((a, b) => a.name.localeCompare(b.name))
       .slice(0, 50);
   }, [searchQuery]);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const isCitySelected = (city: City) => {
     const cityName = `${city.name}, ${city.country}`;
@@ -154,22 +142,10 @@ export default function LocationSelector({
     setMultipleTimezones([]);
   };
 
-  const clearSelection = () => {
-    onChange(null);
-    setSearchQuery("");
-  };
-
   // If controlled externally, render as bottom sheet only
   if (onOpenChange !== undefined) {
-    if (!isOpen) return null;
-
     return (
-      <>
-        {/* Backdrop */}
-        <div className="fixed inset-0 bg-black/50 z-40 animate-fade-in" onClick={() => setIsOpen(false)} />
-
-        {/* Bottom Sheet - Fixed 60% height */}
-        <div className="fixed inset-x-0 bottom-0 popup-container border-t rounded-t-2xl z-50 animate-slide-up h-[60vh] flex flex-col">
+      <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)} height="60vh">
           {/* Search Header with Done button for multi-select */}
           <div className="px-4 py-3 border-b border-border flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-secondary/50 border border-border rounded-xl">
@@ -229,7 +205,6 @@ export default function LocationSelector({
               <div className="p-4 text-center text-muted-foreground">No cities found</div>
             )}
           </div>
-        </div>
 
         {/* Timezone Selector Modal */}
         {showTimezoneSelector && (
@@ -244,106 +219,9 @@ export default function LocationSelector({
             }}
           />
         )}
-      </>
+      </BottomSheet>
     );
   }
 
-  // Original inline mode
-  return (
-    <div className="relative" ref={dropdownRef}>
-      {/* Clickable Trigger */}
-      <button
-        type="button"
-        className={cn(
-          "w-full relative flex items-center gap-3 px-4 py-3.5 min-h-[52px] bg-secondary/50 border border-border rounded-xl cursor-pointer transition-all duration-200 touch-active text-left",
-          isOpen && "ring-2 ring-primary/30 border-primary/30",
-        )}
-        onClick={() => {
-          setIsOpen(true);
-          setSearchQuery("");
-          setTimeout(() => inputRef.current?.focus(), 100);
-        }}
-      >
-        <MapPin className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-
-        {value ? (
-          <div className="flex-1 flex items-center justify-between gap-2">
-            <span className="text-foreground font-medium text-base truncate">{value.name}</span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                clearSelection();
-              }}
-              className="p-2 -mr-1 rounded-full touch-active"
-              aria-label="Clear selection"
-            >
-              <X className="w-5 h-5 text-muted-foreground" />
-            </button>
-          </div>
-        ) : (
-          <>
-            <span className="flex-1 text-muted-foreground text-base">Search cities...</span>
-            <ChevronDown className="w-5 h-5 text-muted-foreground" />
-          </>
-        )}
-      </button>
-
-      {/* Dropdown with Search Inside */}
-      {isOpen && (
-        <div className="fixed inset-x-0 bottom-0 top-auto md:absolute md:top-full md:bottom-auto md:left-0 md:right-0 md:mt-2 popup-container border-t md:border md:rounded-xl shadow-lg z-50 animate-slide-up h-[60vh] md:h-auto flex flex-col">
-          {/* Search Header */}
-          <div className="px-4 py-3 border-b border-border flex items-center gap-3">
-            <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-secondary/50 border border-border rounded-xl">
-              <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search cities or countries..."
-                className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-base"
-                autoFocus
-              />
-            </div>
-            <button onClick={() => setIsOpen(false)} className="p-2 touch-active">
-              <X className="w-5 h-5 text-muted-foreground" />
-            </button>
-          </div>
-
-          <div className="overflow-y-auto flex-1 md:max-h-72 hide-scrollbar">
-            {filteredCities.map((city, index) => (
-              <button
-                key={`${city.name}-${city.country}-${index}`}
-                onClick={() => handleCitySelect(city)}
-                className="w-full px-4 py-4 text-left flex items-center justify-between touch-active popup-item"
-              >
-                <div>
-                  <div className="text-foreground font-medium text-base">{city.name}</div>
-                  <div className="text-sm text-muted-foreground">{city.country}</div>
-                </div>
-                <span className="text-sm text-muted-foreground">{getCurrentTimeInTimezone(city.timezone)}</span>
-              </button>
-            ))}
-            {filteredCities.length === 0 && searchQuery.length > 0 && (
-              <div className="p-4 text-center text-muted-foreground">No cities found</div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Timezone Selector Modal */}
-      {showTimezoneSelector && (
-        <TimezoneSelector
-          timezones={multipleTimezones}
-          cityName={pendingCity?.name || ""}
-          onSelect={handleTimezoneSelect}
-          onClose={() => {
-            setShowTimezoneSelector(false);
-            setPendingCity(null);
-            setMultipleTimezones([]);
-          }}
-        />
-      )}
-    </div>
-  );
+  return null;
 }

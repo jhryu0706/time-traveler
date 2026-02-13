@@ -1,6 +1,6 @@
-import React from 'react';
 import { Clock, X } from 'lucide-react';
 import { getCurrentTimeInTimezone } from '@/utils/timezone';
+import BottomSheet from './BottomSheet';
 
 interface TimezoneSelectorProps {
   timezones: string[];
@@ -16,7 +16,7 @@ export default function TimezoneSelector({
   onClose,
 }: TimezoneSelectorProps) {
   return (
-    <div className="fixed inset-0 bg-background z-50 flex flex-col animate-fade-in">
+    <BottomSheet isOpen={true} onClose={onClose} fullScreen>
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
         <div className="min-w-0">
@@ -38,7 +38,7 @@ export default function TimezoneSelector({
           <p className="text-base text-muted-foreground mb-4">
             Select the correct timezone for your location:
           </p>
-          
+
           <div className="space-y-3">
             {timezones.map((tz) => (
               <button
@@ -60,6 +60,6 @@ export default function TimezoneSelector({
           </div>
         </div>
       </div>
-    </div>
+    </BottomSheet>
   );
 }
