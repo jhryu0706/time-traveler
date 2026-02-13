@@ -9,8 +9,6 @@ interface DateTimeInputProps {
   isValid: boolean;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** If true, opening picker does NOT auto-switch to manual mode; only user interaction does. */
-  deferManualSwitch?: boolean;
 }
 
 const months = [
@@ -23,7 +21,7 @@ const minutes = Array.from({ length: 60 }, (_, i) => i);
 const periods = ['AM', 'PM'];
 
 const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
-  function DateTimeInput({ value, onChange, isValid, isOpen: externalOpen, onOpenChange, deferManualSwitch = false }, ref) {
+  function DateTimeInput({ value, onChange, isValid, isOpen: externalOpen, onOpenChange }, ref) {
     // Track if the user has made an actual change during this open session
     const userChangedRef = useRef(false);
 
@@ -62,23 +60,14 @@ const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
     const suspendScrollHandlersRef = useRef(false);
     const resumeScrollHandlersTimeoutRef = useRef<number | null>(null);
 
-    // Update parent value when any component changes
-    // If deferManualSwitch is true, only call onChange after user has interacted.
-    // IMPORTANT: Only call onChange when the sheet is open to prevent stale state from
-    // overwriting the parent's value after reset.
-    useEffect(() => {
-      // Never call onChange if the sheet is closed
-      if (!externalOpen) return;
-      // Skip calling onChange if we're in deferred mode and user hasn't changed anything
-      if (deferManualSwitch && !userChangedRef.current) return;
-
+    // Build the formatted datetime string from current picker state
+    const getFormattedValue = useCallback(() => {
       const monthStr = String(month + 1).padStart(2, '0');
       const dayStr = String(day).padStart(2, '0');
       const hourStr = String(hour);
       const minuteStr = String(minute).padStart(2, '0');
-      const formatted = `${monthStr}/${dayStr}/${year} ${hourStr}:${minuteStr} ${period}`;
-      onChange(formatted);
-    }, [month, day, year, hour, minute, period, onChange, deferManualSwitch, externalOpen]);
+      return `${monthStr}/${dayStr}/${year} ${hourStr}:${minuteStr} ${period}`;
+    }, [month, day, year, hour, minute, period]);
 
     // Reset to the passed-in value (live clock) every time the sheet opens.
     // useLayoutEffect prevents a one-frame flash of stale values.
